@@ -1,4 +1,6 @@
-from typing import IO, List, Union
+from contextlib import contextmanager
+from pathlib import Path
+from typing import IO, Iterator, List, Union
 
 
 class TextFileNotPaddedError(Exception):
@@ -118,3 +120,43 @@ class _PaddedTextFile:
         line_number: The line number where to move the cursor
         """
         self.__file_descriptor.seek(self.__line_size * line_number, 0)
+
+
+@contextmanager
+def padded_text_file(path: Path, offset: int = 0) -> Iterator[_PaddedTextFile]:
+    """Represent a padded text file, where lines are reachable with O(1) complexity.
+    
+    A padded text file is a text file where all lines have exactly the same lenght.
+    In general, lines are right padded with white spaces.
+    The last line MUST also contain a carriage return.
+
+    Only line(s) you request will be load in memory.
+
+    If at least one line of the file pointed by `path` has not the same lenght than
+    others, a `TextFileNotPaddedError` is raised.
+
+    path  : The path of the padded CSV file.
+    offset: The number of first line(s) to skip. Must be >= 0.
+
+    Usage:
+    with padded_text_file(<file_path>) as pdt:
+        # Get the number of lines
+        len(pdt)
+
+        # Get the third line of the file
+        pdt[2]
+
+        # Get the last line of the file
+        pdt[-1]
+
+        # Get all lines between the third line (included) and the last line (excluded)
+        pdt[2:-1]
+
+    Warning: All lines in the slice will be loaded into memory.
+             For example: pdt[:] will load all the file in memory
+    """
+    try:
+        with path.open() as file_descriptor:
+            yield _PaddedTextFile(file_descriptor, path.stat().st_size, offset)
+    finally:
+        pass

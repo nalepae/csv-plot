@@ -2,7 +2,11 @@ from pathlib import Path
 from typing import IO
 
 import pytest
-from huge_csv_reader.padded_text_file import TextFileNotPaddedError, _PaddedTextFile
+from huge_csv_reader.padded_text_file import (
+    TextFileNotPaddedError,
+    _PaddedTextFile,
+    padded_text_file,
+)
 from pytest import fixture
 
 from tests import assets
@@ -96,3 +100,8 @@ def test_slice(padded_file_descriptor: IO, padded_file_size: int) -> None:
         "9,10,11,12",
         "13,14,15,16",
     ]
+
+
+def test_padded_text_file(padded_file_path):
+    with padded_text_file(padded_file_path) as pdt:
+        assert pdt[2] == "5,6,7,8"
