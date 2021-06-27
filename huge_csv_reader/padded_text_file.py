@@ -174,28 +174,28 @@ def padded_text_file(path: Path, offset: int = 0) -> Iterator[_PaddedTextFile]:
     offset: The number of first line(s) to skip. Must be >= 0.
 
     Usage:
-    with padded_text_file(<file_path>) as pdt:
+    with padded_text_file(<file_path>) as ptf:
         # Get the number of lines
-        len(pdt)
+        len(ptf)
 
         # Get the third line of the file
-        pdt[2]
+        ptf[2]
 
         # Get the last line of the file
-        pdt[-1]
+        ptf[-1]
 
         # Get all lines between the third line (included) and the last line (excluded)
-        pdt[2:-1]
+        ptf[2:-1]
 
         # Warning: All lines in the slice will be loaded into memory.
-        #          For example: pdt[:] will load all the file in memory.
+        #          For example: ptf[:] will load all the file in memory.
 
         # Get an iterator on lines between the third line (included) and the last line
         # (excluded)
-        pdt.get(start=2, stop=-1)
+        ptf.get(start=2, stop=-1)
 
         # Only few lines at a time are load in memory, so it is safe to do:
-        pdt.get()
+        pdptft.get()
     """
     try:
         with path.open() as file_descriptor:
