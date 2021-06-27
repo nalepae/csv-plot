@@ -76,6 +76,7 @@ class _PaddedTextFile:
     def __move_to_start_and_get_stop(
         self, slice_start: Optional[int], slice_stop: Optional[int]
     ) -> int:
+        """Move cursor to `start` and return `stop`."""
         start = (
             (
                 slice_start + self.__offset
@@ -103,7 +104,7 @@ class _PaddedTextFile:
         return stop
 
     def __len__(self):
-        """Return the enumber of lines of the file."""
+        """Return the number of lines of the file."""
         return self.__len - self.__offset
 
     def __getitem__(
@@ -111,7 +112,7 @@ class _PaddedTextFile:
     ) -> Union[str, List[str]]:
         """Get a given line or a given slice of lines.
         
-        line_number_or_slice: The line number or the slice to retrive lines
+        line_number_or_slice: The line number or the slice to retrieve lines
         """
 
         def handle_line_number(line_number: int) -> str:
@@ -140,6 +141,11 @@ class _PaddedTextFile:
     def get(
         self, start: Optional[int] = None, stop: Optional[int] = None
     ) -> Iterator[str]:
+        """Return an iterator on a given slice of lines.
+        
+        start: The first line of slice (included)
+        stop : The last line of slice (excluded)
+        """
         for _ in range(self.__move_to_start_and_get_stop(start, stop)):
             yield next(self.__file_descriptor).rstrip()
 
@@ -181,15 +187,15 @@ def padded_text_file(path: Path, offset: int = 0) -> Iterator[_PaddedTextFile]:
         # Get all lines between the third line (included) and the last line (excluded)
         pdt[2:-1]
 
-    Warning: All lines in the slice will be loaded into memory.
-             For example: pdt[:] will load all the file in memory.
+        # Warning: All lines in the slice will be loaded into memory.
+        #          For example: pdt[:] will load all the file in memory.
 
-    # Get an iterator on lines between the third line (included) and the last line
-    # (excluded)
-    padded_text_file.get(start=2, stop=-1)
+        # Get an iterator on lines between the third line (included) and the last line
+        # (excluded)
+        pdt.get(start=2, stop=-1)
 
-    # Only few lines at a time are load in memory, so it is safe to do:
-    padded_text_file.get()
+        # Only few lines at a time are load in memory, so it is safe to do:
+        pdt.get()
     """
     try:
         with path.open() as file_descriptor:
