@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Iterator, List, Union
+from typing import IO, Iterator, List, Optional, Union
 
 
 class OffsetError(Exception):
@@ -36,7 +36,14 @@ class _PaddedTextFile:
     padded_text_file[2:-1]
 
     Warning: All lines in the slice will be loaded into memory.
-             For example: padded_text_file[:] will load all the file in memory
+             For example: padded_text_file[:] will load all the file in memory.
+
+    # Get an iterator on lines between the third line (included) and the last line
+    # (excluded)
+    padded_text_file.get(start=2, stop=-1)
+
+    # Only few lines at a time are load in memory, so it is safe to do:
+    padded_text_file.get()
     """
 
     def __init__(self, file_descriptor: IO, file_size: int, offset: int) -> None:
@@ -66,6 +73,35 @@ class _PaddedTextFile:
         if file_size % self.__line_size != 0:
             raise TextFileNotPaddedError("text file is not padded")
 
+    def __move_to_start_and_get_stop(
+        self, slice_start: Optional[int], slice_stop: Optional[int]
+    ) -> int:
+        start = (
+            (
+                slice_start + self.__offset
+                if slice_start >= 0
+                else max(self.__offset, self.__len + slice_start)
+            )
+            if slice_start is not None
+            else self.__offset
+        )
+
+        stop = (
+            (
+                (
+                    min(slice_stop - start + self.__offset, self.__len - start)
+                    if slice_stop >= 0
+                    else self.__len + slice_stop - start
+                )
+            )
+            if slice_stop is not None
+            else self.__len - start
+        )
+
+        self.__move_cursor(start)
+
+        return stop
+
     def __len__(self):
         """Return the enumber of lines of the file."""
         return self.__len - self.__offset
@@ -92,29 +128,7 @@ class _PaddedTextFile:
             return next(self.__file_descriptor).rstrip()
 
         def handle_slice(slice: slice) -> List[str]:
-            start = (
-                (
-                    slice.start + self.__offset
-                    if slice.start >= 0
-                    else max(self.__offset, self.__len + slice.start)
-                )
-                if slice.start is not None
-                else self.__offset
-            )
-
-            stop = (
-                (
-                    (
-                        min(slice.stop - start + self.__offset, self.__len - start)
-                        if slice.stop >= 0
-                        else self.__len + slice.stop - start
-                    )
-                )
-                if slice.stop is not None
-                else self.__len - start
-            )
-
-            self.__move_cursor(start)
+            stop = self.__move_to_start_and_get_stop(slice.start, slice.stop)
 
             return [next(self.__file_descriptor).rstrip() for _ in range(stop)]
 
@@ -122,6 +136,12 @@ class _PaddedTextFile:
             return handle_line_number(line_number_or_slice)
         elif isinstance(line_number_or_slice, slice):
             return handle_slice(line_number_or_slice)
+
+    def get(
+        self, start: Optional[int] = None, stop: Optional[int] = None
+    ) -> Iterator[str]:
+        for _ in range(self.__move_to_start_and_get_stop(start, stop)):
+            yield next(self.__file_descriptor).rstrip()
 
     def __move_cursor(self, line_number: int) -> None:
         """Move cursor of file descriptor to `line_number`.
@@ -162,7 +182,14 @@ def padded_text_file(path: Path, offset: int = 0) -> Iterator[_PaddedTextFile]:
         pdt[2:-1]
 
     Warning: All lines in the slice will be loaded into memory.
-             For example: pdt[:] will load all the file in memory
+             For example: pdt[:] will load all the file in memory.
+
+    # Get an iterator on lines between the third line (included) and the last line
+    # (excluded)
+    padded_text_file.get(start=2, stop=-1)
+
+    # Only few lines at a time are load in memory, so it is safe to do:
+    padded_text_file.get()
     """
     try:
         with path.open() as file_descriptor:

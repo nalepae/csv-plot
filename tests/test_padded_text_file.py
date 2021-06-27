@@ -69,38 +69,42 @@ def test_line(padded_file_descriptor: IO, padded_file_size: int) -> None:
 def test_slice(padded_file_descriptor: IO, padded_file_size: int) -> None:
     padded_text_file = _PaddedTextFile(padded_file_descriptor, padded_file_size, 0)
 
-    assert padded_text_file[:] == [
-        "a,b,c,d",
-        "1,2,3,4",
-        "5,6,7,8",
-        "9,10,11,12",
-        "13,14,15,16",
-        "17,18,19,20",
-    ]
+    assert (
+        padded_text_file[:]
+        == list(padded_text_file.get())
+        == [
+            "a,b,c,d",
+            "1,2,3,4",
+            "5,6,7,8",
+            "9,10,11,12",
+            "13,14,15,16",
+            "17,18,19,20",
+        ]
+    )
 
-    assert padded_text_file[:3] == [
-        "a,b,c,d",
-        "1,2,3,4",
-        "5,6,7,8",
-    ]
+    assert (
+        padded_text_file[:3]
+        == list(padded_text_file.get(stop=3))
+        == ["a,b,c,d", "1,2,3,4", "5,6,7,8",]
+    )
 
-    assert padded_text_file[4:] == [
-        "13,14,15,16",
-        "17,18,19,20",
-    ]
+    assert (
+        padded_text_file[4:]
+        == list(padded_text_file.get(start=4))
+        == ["13,14,15,16", "17,18,19,20",]
+    )
 
-    assert padded_text_file[1:4] == [
-        "1,2,3,4",
-        "5,6,7,8",
-        "9,10,11,12",
-    ]
+    assert (
+        padded_text_file[1:4]
+        == list(padded_text_file.get(start=1, stop=4))
+        == ["1,2,3,4", "5,6,7,8", "9,10,11,12",]
+    )
 
-    assert padded_text_file[1:-1] == [
-        "1,2,3,4",
-        "5,6,7,8",
-        "9,10,11,12",
-        "13,14,15,16",
-    ]
+    assert (
+        padded_text_file[1:-1]
+        == list(padded_text_file.get(start=1, stop=-1))
+        == ["1,2,3,4", "5,6,7,8", "9,10,11,12", "13,14,15,16",]
+    )
 
 
 def test_padded_text_file(padded_file_path):
@@ -129,27 +133,33 @@ def test_line_offset(padded_file_descriptor: IO, padded_file_size: int) -> None:
 def test_slice_offset(padded_file_descriptor: IO, padded_file_size: int) -> None:
     padded_text_file = _PaddedTextFile(padded_file_descriptor, padded_file_size, 1)
 
-    assert padded_text_file[:] == [
-        "1,2,3,4",
-        "5,6,7,8",
-        "9,10,11,12",
-        "13,14,15,16",
-        "17,18,19,20",
-    ]
+    assert (
+        padded_text_file[:]
+        == list(padded_text_file.get())
+        == ["1,2,3,4", "5,6,7,8", "9,10,11,12", "13,14,15,16", "17,18,19,20",]
+    )
 
-    assert padded_text_file[:3] == ["1,2,3,4", "5,6,7,8", "9,10,11,12"]
+    assert (
+        padded_text_file[:3]
+        == list(padded_text_file.get(stop=3))
+        == ["1,2,3,4", "5,6,7,8", "9,10,11,12"]
+    )
 
-    assert padded_text_file[4:] == [
-        "17,18,19,20",
-    ]
+    assert (
+        padded_text_file[4:] == list(padded_text_file.get(start=4)) == ["17,18,19,20",]
+    )
 
-    assert padded_text_file[1:4] == ["5,6,7,8", "9,10,11,12", "13,14,15,16"]
+    assert (
+        padded_text_file[1:4]
+        == list(padded_text_file.get(start=1, stop=4))
+        == ["5,6,7,8", "9,10,11,12", "13,14,15,16"]
+    )
 
-    assert padded_text_file[1:-1] == [
-        "5,6,7,8",
-        "9,10,11,12",
-        "13,14,15,16",
-    ]
+    assert (
+        padded_text_file[1:-1]
+        == list(padded_text_file.get(start=1, stop=-1))
+        == ["5,6,7,8", "9,10,11,12", "13,14,15,16",]
+    )
 
 
 def test_offset_max(padded_file_descriptor: IO, padded_file_size: int) -> None:
