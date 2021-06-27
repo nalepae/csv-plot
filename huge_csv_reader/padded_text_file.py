@@ -195,7 +195,7 @@ def padded_text_file(path: Path, offset: int = 0) -> Iterator[_PaddedTextFile]:
         ptf.get(start=2, stop=-1)
 
         # Only few lines at a time are load in memory, so it is safe to do:
-        pdptft.get()
+        ptf.get()
     """
     try:
         with path.open() as file_descriptor:
