@@ -3,6 +3,10 @@ from pathlib import Path
 from typing import IO, Iterator, List, Union
 
 
+class OffsetError(Exception):
+    pass
+
+
 class TextFileNotPaddedError(Exception):
     pass
 
@@ -43,6 +47,8 @@ class _PaddedTextFile:
                          `file_descriptor`
         offset         : The number of first line(s) to skip. Must be >= 0.
         
+        If not 0 <= `offset` <= number of lines, an `OffsetError` is raised. 
+        
         If at least one line of the file pointed by `file_descriptor` has not the same
         length than others, a `TextFileNotPaddedError` is raised.
         """
@@ -54,12 +60,15 @@ class _PaddedTextFile:
         self.__line_size = len(first_line)
         self.__len = file_size // self.__line_size
 
+        if not 0 <= offset <= self.__len:
+            raise OffsetError(f"Offset must be in [0;{self.__len}]")
+
         if file_size % self.__line_size != 0:
             raise TextFileNotPaddedError("text file is not padded")
 
     def __len__(self):
         """Return the enumber of lines of the file."""
-        return self.__len
+        return self.__len - self.__offset
 
     def __getitem__(
         self, line_number_or_slice: Union[int, slice]
@@ -76,7 +85,7 @@ class _PaddedTextFile:
                 else self.__len + line_number
             )
 
-            if not self.__offset <= real_line_number < len(self):
+            if not self.__offset <= real_line_number < self.__len:
                 raise IndexError("list index out of range")
 
             self.__move_cursor(real_line_number)
@@ -87,7 +96,7 @@ class _PaddedTextFile:
                 (
                     slice.start + self.__offset
                     if slice.start >= 0
-                    else max(self.__offset, len(self) + slice.start)
+                    else max(self.__offset, self.__len + slice.start)
                 )
                 if slice.start is not None
                 else self.__offset
@@ -96,13 +105,13 @@ class _PaddedTextFile:
             stop = (
                 (
                     (
-                        min(slice.stop - start + self.__offset, len(self) - start)
+                        min(slice.stop - start + self.__offset, self.__len - start)
                         if slice.stop >= 0
-                        else len(self) + slice.stop - start
+                        else self.__len + slice.stop - start
                     )
                 )
                 if slice.stop is not None
-                else len(self) - start
+                else self.__len - start
             )
 
             self.__move_cursor(start)
