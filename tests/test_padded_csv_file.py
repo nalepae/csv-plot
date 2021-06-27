@@ -1,10 +1,15 @@
-from huge_csv_reader.padded_csv_file import ColumnNotFoundError, _PaddedCSVFile
-from pytest import fixture
 from pathlib import Path
+from typing import IO
 
 import pytest
+from huge_csv_reader.padded_csv_file import (
+    ColumnNotFoundError,
+    _PaddedCSVFile,
+    padded_csv_file,
+)
+from pytest import fixture
+
 from tests import assets
-from typing import IO
 
 
 @fixture
@@ -85,3 +90,8 @@ def test_slice(padded_file_descriptor: IO, padded_file_size: int) -> None:
         == list(padded_csv_file.get(start=1, stop=-1))
         == [[8, 6], [12, 10], [16, 14]]
     )
+
+
+def test_padded_csv_file(padded_file_path):
+    with padded_csv_file(padded_file_path, [("d", int), ("b", int)]) as pcf:
+        assert pcf[2] == [12, 10]

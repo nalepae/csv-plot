@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+from pathlib import Path
 from typing import Dict, IO, Iterator, List, Optional, Tuple, Union, cast
 from huge_csv_reader.padded_text_file import _PaddedTextFile
 
@@ -141,3 +143,56 @@ class _PaddedCSVFile:
             items = line.split(",")
             yield [type(items[index]) for index, type in self.__column_indexes_type]
 
+
+@contextmanager
+def padded_csv_file(
+    path: Path, column_and_type: List[Tuple[str, type]]
+) -> Iterator[_PaddedCSVFile]:
+    """Represent a padded CSV file, where lines are reachable with O(1) complexity.
+    
+    A padded CSV file is a CSVS file where all lines have exactly the same lenght.
+    In general, lines are right padded with white spaces.
+    The last line MUST also contain a carriage return.
+
+    Only line(s) you request will be load in memory.
+
+    Usage:
+    with padded_csv_file(<file_path>, <column_and_type_tuples>) as pcf:
+        ...
+
+    Example: With the following file:
+    a,b,c,d    
+    1,2,3,4    
+    5,6,7,8    
+    9,10,11,12 
+    13,14,15,16
+    17,18,19,20
+
+    with padded_csv_file(<file_path>, [("d", int), ("b", int)]) as pcf:
+        # Get the number of lines
+        len(pcf) # = 5
+
+        # Get the third line of the file
+        pcf[2] # = [12, 10]
+
+        # Get the last line of the file
+        pcf[-1] # = [20, 18]
+
+        # Get all lines between the third line (included) and the last line (excluded)
+        pcf[2:-1] # = [[12, 10], [16, 14]]
+
+        Warning: All lines in the slice will be loaded into memory.
+                For example: pcf[:] will load all the file in memory.
+
+        # Get an iterator on lines between the third line (included) and the last line
+        # (excluded)
+        pcf.get(start=2, stop=-1)
+
+        # Only few lines at a time are load in memory, so it is safe to do:
+        pcf.get()
+    """
+    try:
+        with path.open() as file_descriptor:
+            yield _PaddedCSVFile(file_descriptor, path.stat().st_size, column_and_type)
+    finally:
+        pass
