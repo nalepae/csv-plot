@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, IO, Iterator, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, IO, Iterator, List, Optional, Tuple, Union, cast
 from huge_csv_reader.padded_text_file import _PaddedTextFile
 
 
@@ -64,6 +64,7 @@ class _PaddedCSVFile:
         file_descriptor: IO,
         file_size: int,
         column_and_type: List[Tuple[str, type]],
+        unwrap_if_one_column=False,
     ) -> None:
         """Constructor.
 
@@ -72,7 +73,10 @@ class _PaddedCSVFile:
                          `file_descriptor`
         column_and_type: A list of tuples where each tuple has:
                          - The name of the column
-                         - The type of the column                 
+                         - The type of the column     
+        unwrap_if_one_column: If only one column unwrap result.
+                              Exemple: Instead of returning [[4], [5], [2]] return
+                                       [4, 5, 2]            
         
         If at least one line of the file pointed by `file_descriptor` has not the same
         length than others, a `TextFileNotPaddedError` is raised.
@@ -81,7 +85,7 @@ class _PaddedCSVFile:
         header_line = cast(str, padded_text_file[0])
         headers = header_line.split(",")
 
-        if len(column_and_type) == 0:
+        if column_and_type == []:
             raise ValueError("`column_and_type` is an empty list")
 
         columns, _ = zip(*column_and_type)
@@ -98,38 +102,59 @@ class _PaddedCSVFile:
             (header_to_index[column], type) for column, type in column_and_type
         ]
 
-        self.padded_text_file = _PaddedTextFile(file_descriptor, file_size, offset=1)
+        self.__padded_text_file = _PaddedTextFile(file_descriptor, file_size, offset=1)
+        _, *others = column_and_type
+        self.__has_to_unwrap = unwrap_if_one_column and others == []
 
     def __len__(self):
         """Return the number of lines of the file (excluding the header)."""
-        return len(self.padded_text_file)
+        return len(self.__padded_text_file)
 
     def __getitem__(
         self, line_number_or_slice: Union[int, slice]
-    ) -> Union[List, List[List]]:
+    ) -> Union[Any, List, List[List]]:
         """Get a given values  or a given slice of values.
         
         line_number_or_slice: The line number or the slice to retrieve values
         """
 
-        def handle_line_number(line_number: int) -> List:
-            line = cast(str, self.padded_text_file[line_number])
+        def handle_line_number(line_number: int) -> Union[Any, List]:
+            line = cast(str, self.__padded_text_file[line_number])
             items = line.split(",")
-            return [type(items[index]) for index, type in self.__column_indexes_type]
 
-        def handle_slice(slice: slice) -> List[List]:
-            return [
+            return self.__unwrap_if_needed_single(
+                [type(items[index]) for index, type in self.__column_indexes_type]
+            )
+
+        def handle_slice(slice: slice) -> List[Union[Any, List]]:
+            return self.__unwrap_if_needed_multi(
                 [
-                    type(items.split(",")[index])
-                    for index, type in self.__column_indexes_type
+                    [
+                        type(items.split(",")[index])
+                        for index, type in self.__column_indexes_type
+                    ]
+                    for items in self.__padded_text_file[slice]
                 ]
-                for items in self.padded_text_file[slice]
-            ]
+            )
 
         if isinstance(line_number_or_slice, int):
             return handle_line_number(line_number_or_slice)
         elif isinstance(line_number_or_slice, slice):
             return handle_slice(line_number_or_slice)
+
+    def __unwrap_if_needed_single(self, items: List) -> Union[List, Any]:
+        if self.__has_to_unwrap:
+            item, *trash = items
+            assert trash == []
+            return item
+        return items
+
+    def __unwrap_if_needed_multi(self, items: List[List]) -> List:
+        return (
+            [item for sublist in items for item in sublist]
+            if self.__has_to_unwrap
+            else items
+        )
 
     def get(
         self, start: Optional[int] = None, stop: Optional[int] = None
@@ -139,9 +164,10 @@ class _PaddedCSVFile:
         start: The first line of slice (included)
         stop : The last line of slice (excluded)
         """
-        for line in self.padded_text_file.get(start, stop):
+        for line in self.__padded_text_file.get(start, stop):
             items = line.split(",")
-            yield [type(items[index]) for index, type in self.__column_indexes_type]
+            toto = [type(items[index]) for index, type in self.__column_indexes_type]
+            yield self.__unwrap_if_needed_single(toto)
 
 
 @contextmanager
