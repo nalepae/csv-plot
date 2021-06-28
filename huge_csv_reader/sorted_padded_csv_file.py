@@ -1,5 +1,7 @@
 from bisect import bisect_left, bisect_right
+from contextlib import contextmanager
 from enum import Enum
+from pathlib import Path
 from typing import IO, Any, Iterator, List, Optional, Tuple, Union
 
 from huge_csv_reader.padded_csv_file import _PaddedCSVFile
@@ -161,4 +163,62 @@ class _SortedPaddedCSVFile:
 
         for x, ys in zip(x_iterator, ys_iterator):
             yield x, ys  # for line in self.padded_text_file.get(start, stop):
+
+
+@contextmanager
+def sorted_padded_csv_file(
+    path: Path, x_and_type: Tuple[str, type], ys_and_types: List[Tuple[str, type]],
+) -> Iterator[_SortedPaddedCSVFile]:
+    """Represent a padded CSV file with one sorted column, where all lines are reachable
+    through the sorted column with O(log(n)) complexity.
+    
+    A padded CSV file is a CSV file where all lines have exactly the same length.
+    In general, lines are right padded with white spaces.
+    The last line MUST also contain a carriage return.    
+
+    Only line(s) you request will be load in memory.
+
+    Usage:
+    with sorted_padded_csv_file as spcf:
+        ...
+    
+    Example: With the following file represented by <file_descriptor>:
+    a,b,c,d    
+    1,2,3,4    
+    5,6,7,8    
+    9,10,11,12 
+    13,14,15,16
+    17,18,19,20
+
+    Here all columns are sorted, but in this example, only the column "c" has to be.
+
+    with sorted_padded_csv_file(<file_path>, ("c", int), [("d", int), ("b", int)]) as spcf:
+        # Get the number of lines
+        len(spcf) # = 5    
+
+        # Get the line corresponding to c == 7
+        spcf[7] # = (3, [8, 6])
+
+        # Get an iterator on all lines corresponding to 6.5 <= c <= 15.5
+        spcf.get(start=6.5, stop=15.5)
+
+        # Get all lines corresponding to 6.5 <= c <= 15.5
+        spcf[6.5:15.5] # = [(7, [8, 6]), (11, [12, 10]), (15, [16, 14])]
+
+        # Warning: All lines in the selected range will be loaded into memory.
+        #          For example: spcf[:] will load all the file in memory.
+        #          If possible, use spcf.get(start=a, stop=b) instead of
+        #                           spcf[a, b]
+    """
+    try:
+        with path.open() as file_descriptor_1, path.open() as file_descriptor_2:
+            yield _SortedPaddedCSVFile(
+                file_descriptor_1,
+                file_descriptor_2,
+                path.stat().st_size,
+                x_and_type,
+                ys_and_types,
+            )
+    finally:
+        pass
 

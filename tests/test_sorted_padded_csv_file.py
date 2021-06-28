@@ -2,8 +2,10 @@ from pathlib import Path
 from typing import IO
 
 import pytest
-
-from huge_csv_reader.sorted_padded_csv_file import _SortedPaddedCSVFile
+from huge_csv_reader.sorted_padded_csv_file import (
+    _SortedPaddedCSVFile,
+    sorted_padded_csv_file,
+)
 from pytest import fixture
 
 from tests import assets
@@ -109,3 +111,16 @@ def test_slice(
         == list(sorted_padded_csv_file.get(start=14.5, stop=42))
         == [(15, [16, 14]), (19, [20, 18])]
     )
+
+
+def test_sorted_padded_csv_file(padded_file_path):
+    with sorted_padded_csv_file(
+        padded_file_path, ("c", int), [("d", int), ("b", int)],
+    ) as spcf:
+        assert (
+            spcf[15:19]
+            == spcf[14.5:42]  # type: ignore
+            == list(spcf.get(start=15, stop=19))
+            == list(spcf.get(start=14.5, stop=42))
+            == [(15, [16, 14]), (19, [20, 18])]
+        )
