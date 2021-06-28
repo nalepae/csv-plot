@@ -14,11 +14,11 @@ class TextFileNotPaddedError(Exception):
 class _PaddedTextFile:
     """Represent a padded text file, where lines are reachable with O(1) complexity.
     
-    A padded text file is a text file where all lines have exactly the same lenght.
+    A padded text file is a text file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
     The last line MUST also contain a carriage return.
 
-    Only line(s) you request will be load in memory.
+    Only line(s) you request will be loaded in memory.
 
     Usage:
     padded_text_file = _PaddedTextFile(<file_descriptor>, <file_zise>, <offset>)
@@ -32,27 +32,25 @@ class _PaddedTextFile:
     # Get the last line of the file
     padded_text_file[-1]
 
-    # Get all lines between the third line (included) and the last line (excluded)
-    padded_text_file[2:-1]
-
-    Warning: All lines in the slice will be loaded into memory.
-             For example: padded_text_file[:] will load all the file in memory.
-
     # Get an iterator on lines between the third line (included) and the last line
     # (excluded)
     padded_text_file.get(start=2, stop=-1)
 
-    # Only few lines at a time are load in memory, so it is safe to do:
-    padded_text_file.get()
+    # Get all lines between the third line (included) and the last line (excluded)
+    # Warning: All lines in the selected range will be loaded into memory.
+    #          For example: padded_text_file[:] will load all the file in memory.
+    #          If possible, use padded_text_file.get(start=a, stop=b) instead of
+    #                           padded_text_file[a, b]
+    padded_text_file[2:-1]
     """
 
     def __init__(self, file_descriptor: IO, file_size: int, offset: int) -> None:
         """Constructor.
 
-        file_descriptor: The file descriptor pointing to the padded CSV file.
-        file_size      : The total size (in bytes) of the padded CSV file pointed by
+        file_descriptor: The file descriptor pointing to the padded CSV file
+        file_size      : The file size (in bytes) of the padded CSV file pointed by
                          `file_descriptor`
-        offset         : The number of first line(s) to skip. Must be >= 0.
+        offset         : The number of first line(s) to skip. Must be >= 0
         
         If not 0 <= `offset` <= number of lines, an `OffsetError` is raised. 
         
@@ -112,7 +110,7 @@ class _PaddedTextFile:
     ) -> Union[str, List[str]]:
         """Get a given line or a given slice of lines.
         
-        line_number_or_slice: The line number or the slice to retrieve lines
+        line_number_or_slice: The line number or the slice where lines will be retrieved
         """
 
         def handle_line_number(line_number: int) -> str:
@@ -161,20 +159,14 @@ class _PaddedTextFile:
 def padded_text_file(path: Path, offset: int = 0) -> Iterator[_PaddedTextFile]:
     """Represent a padded text file, where lines are reachable with O(1) complexity.
     
-    A padded text file is a text file where all lines have exactly the same lenght.
+    A padded text file is a text file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
     The last line MUST also contain a carriage return.
 
-    Only line(s) you request will be load in memory.
-
-    If at least one line of the file pointed by `path` has not the same lenght than
-    others, a `TextFileNotPaddedError` is raised.
-
-    path  : The path of the padded CSV file.
-    offset: The number of first line(s) to skip. Must be >= 0.
+    Only line(s) you request will be loaded in memory.
 
     Usage:
-    with padded_text_file(<file_path>) as ptf:
+    with padded_text_file(<file_path>, <offset>) as ptf:
         # Get the number of lines
         len(ptf)
 
@@ -184,18 +176,15 @@ def padded_text_file(path: Path, offset: int = 0) -> Iterator[_PaddedTextFile]:
         # Get the last line of the file
         ptf[-1]
 
-        # Get all lines between the third line (included) and the last line (excluded)
-        ptf[2:-1]
-
-        # Warning: All lines in the slice will be loaded into memory.
-        #          For example: ptf[:] will load all the file in memory.
-
         # Get an iterator on lines between the third line (included) and the last line
         # (excluded)
         ptf.get(start=2, stop=-1)
 
-        # Only few lines at a time are load in memory, so it is safe to do:
-        ptf.get()
+        # Get all lines between the third line (included) and the last line (excluded)
+        Warning: All lines in the selected range will be loaded into memory.
+                For example: ptf[:] will load all the file in memory.
+                If possible, use ptf.get(start=a, stop=b) instead of ptf[a, b]
+        ptf[2:-1]
     """
     try:
         with path.open() as file_descriptor:

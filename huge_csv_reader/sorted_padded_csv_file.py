@@ -14,7 +14,7 @@ class _SortedPaddedCSVFile:
     """Represent a padded CSV file with one sorted column, where all lines are reachable
     through the sorted column with O(log(n)) complexity.
     
-    A padded CSV file is a CSV file where all lines have exactly the same lenght.
+    A padded CSV file is a CSV file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
     The last line MUST also contain a carriage return.    
 
@@ -46,19 +46,18 @@ class _SortedPaddedCSVFile:
     len(sorted_padded_csv_file) # = 5    
 
     # Get the line corresponding to c == 7
-    padded_csv_file[7] # = (3, [8, 6])
-
-    # Get all lines corresponding to 6.5 <= c <= 15.5
-    padded_csv_file[6.5:15.5] # = [(7, [8, 6]), (11, [12, 10]), (15, [16, 14])]
-
-    Warning: All lines in the slice will be loaded into memory.
-            For example: padded_csv_file[:] will load all the file in memory.
+    sorted_padded_csv_file[7] # = (3, [8, 6])
 
     # Get an iterator on all lines corresponding to 6.5 <= c <= 15.5
-    padded_csv_file.get(start=6.5, stop=15.5)
+    sorted_padded_csv_file.get(start=6.5, stop=15.5)
 
-    # Only few lines at a time are load in memory, so it is safe to do:
-    padded_csv_file.get()
+    # Get all lines corresponding to 6.5 <= c <= 15.5
+    sorted_padded_csv_file[6.5:15.5] # = [(7, [8, 6]), (11, [12, 10]), (15, [16, 14])]
+
+    # Warning: All lines in the selected range will be loaded into memory.
+    #          For example: sorted_padded_csv_file[:] will load all the file in memory.
+    #          If possible, use sorted_padded_csv_file.get(start=a, stop=b) instead of
+    #                           sorted_padded_csv_file[a, b]
     """
 
     def __init__(
@@ -73,7 +72,7 @@ class _SortedPaddedCSVFile:
 
         file_descriptor_1: The file descriptor pointing to the padded CSV file.
         file_descriptor_2: The file descriptor pointing to the padded CSV file.
-        file_size        : The total size (in bytes) of the padded CSV file pointed by
+        file_size        : The file size (in bytes) of the padded CSV file pointed by
                            `file_descriptor`
         x_and_type       : A tuple containing
                            - The name of the column on which requests will be done

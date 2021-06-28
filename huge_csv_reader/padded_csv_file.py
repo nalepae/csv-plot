@@ -11,7 +11,7 @@ class ColumnNotFoundError(Exception):
 class _PaddedCSVFile:
     """Represent a padded CSV file, where lines are reachable with O(1) complexity.
     
-    A padded CSV file is a CSVS file where all lines have exactly the same lenght.
+    A padded CSV file is a CSV file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
     The last line MUST also contain a carriage return.
 
@@ -45,18 +45,16 @@ class _PaddedCSVFile:
     # Get the last line of the file
     padded_csv_file[-1] # = [20, 18]
 
-    # Get all lines between the third line (included) and the last line (excluded)
-    padded_csv_file[2:-1] # = [[12, 10], [16, 14]]
-
-    Warning: All lines in the slice will be loaded into memory.
-             For example: padded_csv_file[:] will load all the file in memory.
-
     # Get an iterator on lines between the third line (included) and the last line
-    # (excluded)
+    # (excluded) 
     padded_csv_file.get(start=2, stop=-1)
 
-    # Only few lines at a time are load in memory, so it is safe to do:
-    padded_csv_file.get()
+    # Get all lines between the third line (included) and the last line (excluded)
+    # Warning: All lines in the selected range will be loaded into memory.
+    #          For example: padded_csv_file[:] will load all the file in memory.
+    #          If possible, use padded_csv_file.get(start=a, stop=b) instead of
+    #                           padded_csv_file[a, b]       
+    padded_csv_file[2:-1] # = [[12, 10], [16, 14]]
     """
 
     def __init__(
@@ -68,13 +66,13 @@ class _PaddedCSVFile:
     ) -> None:
         """Constructor.
 
-        file_descriptor: The file descriptor pointing to the padded CSV file.
-        file_size      : The total size (in bytes) of the padded CSV file pointed by
+        file_descriptor: The file descriptor pointing to the padded CSV file
+        file_size      : The file size (in bytes) of the padded CSV file pointed by
                          `file_descriptor`
         column_and_type: A list of tuples where each tuple has:
                          - The name of the column
                          - The type of the column     
-        unwrap_if_one_column: If only one column unwrap result.
+        unwrap_if_one_column: Unwrap if only one column unwrap result.
                               Exemple: Instead of returning [[4], [5], [2]] return
                                        [4, 5, 2]            
         
@@ -113,9 +111,10 @@ class _PaddedCSVFile:
     def __getitem__(
         self, line_number_or_slice: Union[int, slice]
     ) -> Union[Any, List, List[List]]:
-        """Get a given values  or a given slice of values.
+        """Get given values or a given slice of values.
         
-        line_number_or_slice: The line number or the slice to retrieve values
+        line_number_or_slice: The line number or the slice where values will be
+                              retrieved
         """
 
         def handle_line_number(line_number: int) -> Union[Any, List]:
@@ -176,17 +175,17 @@ def padded_csv_file(
 ) -> Iterator[_PaddedCSVFile]:
     """Represent a padded CSV file, where lines are reachable with O(1) complexity.
     
-    A padded CSV file is a CSVS file where all lines have exactly the same lenght.
+    A padded CSV file is a CSV file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
     The last line MUST also contain a carriage return.
 
     Only line(s) you request will be load in memory.
 
     Usage:
-    with padded_csv_file(<file_path>, <column_and_type_tuples>) as pcf:
+    with padded_csv_file(<file_path>, <column_and_type>) as pcf:
         ...
 
-    Example: With the following file:
+    Example: With the following file represented by <file_descriptor>:
     a,b,c,d    
     1,2,3,4    
     5,6,7,8    
@@ -204,18 +203,16 @@ def padded_csv_file(
         # Get the last line of the file
         pcf[-1] # = [20, 18]
 
-        # Get all lines between the third line (included) and the last line (excluded)
-        pcf[2:-1] # = [[12, 10], [16, 14]]
-
-        Warning: All lines in the slice will be loaded into memory.
-                For example: pcf[:] will load all the file in memory.
-
         # Get an iterator on lines between the third line (included) and the last line
-        # (excluded)
+        # (excluded) 
         pcf.get(start=2, stop=-1)
 
-        # Only few lines at a time are load in memory, so it is safe to do:
-        pcf.get()
+        # Get all lines between the third line (included) and the last line (excluded)
+        # Warning: All lines in the selected range will be loaded into memory.
+        #          For example: padded_csv_file[:] will load all the file in memory.
+        #          If possible, use pcf.get(start=a, stop=b) instead of
+        #                           pcf[a, b]       
+        pcf[2:-1] # = [[12, 10], [16, 14]]
     """
     try:
         with path.open() as file_descriptor:
