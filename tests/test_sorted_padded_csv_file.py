@@ -76,7 +76,6 @@ def test_slice(
     assert (
         sorted_padded_csv_file[:]
         == list(sorted_padded_csv_file.get())
-        == sorted_padded_csv_file[-42:]
         == [(3, [4, 2]), (7, [8, 6]), (11, [12, 10]), (15, [16, 14]), (19, [20, 18]),]
     )
 
