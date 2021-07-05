@@ -162,7 +162,7 @@ class _SortedPaddedCSVFile:
         ys_iterator = self.__ys_file.get(start_, stop_)
 
         for x, ys in zip(x_iterator, ys_iterator):
-            yield x, ys  # for line in self.padded_text_file.get(start, stop):
+            yield x, ys
 
 
 @contextmanager
