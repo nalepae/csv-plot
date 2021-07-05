@@ -164,6 +164,19 @@ class _SortedPaddedCSVFile:
         for x, ys in zip(x_iterator, ys_iterator):
             yield x, ys
 
+    def number_of_lines_between(
+        self, start: Optional[Any] = None, stop: Optional[Any] = None
+    ) -> int:
+        """Get the number of lines between `start` and `stop`.
+
+        start: The value of `x` corresponding to the first line
+        stop : The value of `x` corresponding to the last line    
+        """
+        start_, stop_ = self.__get_start_stop(slice(start, stop))
+        return (stop_ if stop_ is not None else len(self)) - (
+            start_ if start_ is not None else 0
+        )
+
 
 @contextmanager
 def sorted_padded_csv_file(

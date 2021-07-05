@@ -112,6 +112,44 @@ def test_slice(
     )
 
 
+def test_number_of_lines_between(
+    padded_file_descriptor_1: IO, padded_file_descriptor_2: IO, padded_file_size: int
+) -> None:
+    sorted_padded_csv_file = _SortedPaddedCSVFile(
+        padded_file_descriptor_1,
+        padded_file_descriptor_2,
+        padded_file_size,
+        ("c", int),
+        [("d", int), ("b", int)],
+    )
+
+    assert sorted_padded_csv_file.number_of_lines_between() == 5
+
+    assert (
+        sorted_padded_csv_file.number_of_lines_between(stop=3)
+        == sorted_padded_csv_file.number_of_lines_between(stop=3.5)
+        == 1
+    )
+
+    assert (
+        sorted_padded_csv_file.number_of_lines_between(stop=7)
+        == sorted_padded_csv_file.number_of_lines_between(stop=7.5)
+        == 2
+    )
+
+    assert (
+        sorted_padded_csv_file.number_of_lines_between(start=7, stop=15)
+        == sorted_padded_csv_file.number_of_lines_between(start=6.5, stop=15.5)
+        == 3
+    )
+
+    assert (
+        sorted_padded_csv_file.number_of_lines_between(start=15, stop=19)
+        == sorted_padded_csv_file.number_of_lines_between(start=14.5, stop=42)
+        == 2
+    )
+
+
 def test_sorted_padded_csv_file(padded_file_path):
     with sorted_padded_csv_file(
         padded_file_path, ("c", int), [("d", int), ("b", int)],
