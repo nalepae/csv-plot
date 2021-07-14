@@ -95,3 +95,65 @@ def sample(
                     **{f"{key}_max": value for key, value in max_values.items()},
                 }
             )
+
+
+def sample_sampled(source_path: Path, dest_path: Path, period: int) -> None:
+    """Sample an already sampled CSV file every `period` line.
+    
+    Example:
+    With the following CSV corresponding to `source_path`:
+    a,b_min,b_max,d_min,d_max
+    1,2.0,6.0,4.0,8.0
+    9,10.0,14.0,12.0,16.0
+    17,18.0,18.0,20.0,20.0
+
+    With period == 2,
+
+    The CSV file written in `dest_path` will be:
+    a,b_min,b_max,d_min,d_max
+    1,2.0,14.0,4.0,16.0
+    17,18.0,18.0,20.0,20.0
+    """
+    with source_path.open() as source_file, dest_path.open("w") as dest_file:
+        reader = csv.DictReader(source_file)
+
+        assert reader.fieldnames
+
+        xs = [
+            item
+            for item in reader.fieldnames
+            if not (item.endswith("_min") or item.endswith("_max"))
+        ]
+
+        if len(xs) == 0:
+            raise ValueError("No X found in source file")
+
+        x, *trash = xs
+
+        if trash:
+            raise ValueError("Several Xs found in source file")
+
+        writer = csv.DictWriter(dest_file, fieldnames=reader.fieldnames)
+        writer.writeheader()
+
+        x_value = None
+        min_values: Dict[str, float] = defaultdict(lambda: float("inf"))
+        max_values: Dict[str, float] = defaultdict(lambda: float("-inf"))
+
+        for line_num, line_dict in enumerate(reader):
+            for key, value in line_dict.items():
+                if key.endswith("_min"):
+                    min_values[key] = min(min_values[key], float(value))
+                elif key.endswith("_max"):
+                    max_values[key] = max(max_values[key], float(value))
+
+            if line_num % period == 0:
+                x_value = line_dict[x]
+
+            if line_num % period == period - 1:
+                writer.writerow({**{x: x_value}, **min_values, **max_values})
+                min_values = defaultdict(lambda: float("inf"))
+                max_values = defaultdict(lambda: float("-inf"))
+
+        if line_num % period != period - 1:
+            writer.writerow({**{x: x_value}, **min_values, **max_values})
