@@ -31,7 +31,7 @@ def test_sample(tmpdir, not_padded_file_path, sampled_file_path):
     assert filecmp.cmp(tmpdir / "output.csv", sampled_file_path)
 
 
-def test_not_float(tmpdir, not_padded_file_path):
+def test_sample_not_float(tmpdir, not_padded_file_path):
     with pytest.raises(ValueError):
         sample(
             not_padded_file_path,
@@ -42,7 +42,7 @@ def test_not_float(tmpdir, not_padded_file_path):
         )
 
 
-def test_bad_x(tmpdir, not_padded_file_path):
+def test_sample_bad_x(tmpdir, not_padded_file_path):
     with pytest.raises(IndexError):
         sample(
             not_padded_file_path,
@@ -53,7 +53,7 @@ def test_bad_x(tmpdir, not_padded_file_path):
         )
 
 
-def test_bad_y(tmpdir, not_padded_file_path):
+def test_sample_bad_y(tmpdir, not_padded_file_path):
     with pytest.raises(IndexError):
         sample(
             not_padded_file_path,
