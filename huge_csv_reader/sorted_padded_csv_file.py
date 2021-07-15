@@ -1,8 +1,8 @@
 from bisect import bisect_left, bisect_right
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import IO, Any, Iterator, List, Optional, Tuple, Union
+from typing import IO, Any, Dict, Iterator, List, Optional, Set, Tuple, Union
 
 from huge_csv_reader.padded_csv_file import _PaddedCSVFile
 
@@ -235,3 +235,46 @@ def sorted_padded_csv_file(
     finally:
         pass
 
+
+class _Selector:
+    """This class aims to help what sorted padded CSV file to choose regarding the
+    number of lines available between start and stop.
+    """
+
+    def __init__(self, path_to_spcf: Dict[Path, _SortedPaddedCSVFile]) -> None:
+        """Initializer
+
+        path_to_spcf: A dictionary where each key is a path to a file, and where each
+                      value is the correspondonding `_SortedPaddedCSVFile` object.
+        """
+        self.__path_to_spcf = path_to_spcf
+
+    def get_nb_lines_between(self, start: Any, stop: Any) -> Dict[Path, int]:
+        """Get the number of lines between `start` and `stop` for each file."""
+        return {
+            path: spcf.number_of_lines_between(start, stop)
+            for path, spcf in self.__path_to_spcf.items()
+        }
+
+
+@contextmanager
+def selector(paths: Set[Path], x_and_type: Tuple[str, type]) -> Iterator[_Selector]:
+    """Help to choose a file based on the number of lines between to X values.
+
+    Usage:
+    with selector({Path1, Path2, ..., Pathn}, ("x", float)) as select:
+        select.get_nb_of_lines_between(<start>, <stop>)
+        # ==> {Path1: 42, Path2: 1664, ..., Pathn: 1986}
+
+    """
+    with ExitStack() as stack:
+        # TODO: Modify `sorted_padded_csv_file` so it accepts a empty list as the third
+        #       argument
+        path_to_spcf = {
+            path: stack.enter_context(
+                sorted_padded_csv_file(path, x_and_type, [x_and_type])
+            )
+            for path in paths
+        }
+
+        yield _Selector(path_to_spcf)

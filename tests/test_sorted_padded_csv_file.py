@@ -4,6 +4,7 @@ from typing import IO
 import pytest
 from huge_csv_reader.sorted_padded_csv_file import (
     _SortedPaddedCSVFile,
+    selector,
     sorted_padded_csv_file,
 )
 from pytest import fixture
@@ -14,6 +15,16 @@ from tests import assets
 @fixture
 def padded_file_path() -> Path:
     return Path(assets.__file__).parent / "padded.csv"
+
+
+@fixture
+def sampled_padded_file_path() -> Path:
+    return Path(assets.__file__).parent / "sampled_padded.csv"
+
+
+@fixture
+def double_sampled_padded_file_path() -> Path:
+    return Path(assets.__file__).parent / "double_sampled_padded.csv"
 
 
 @fixture
@@ -161,3 +172,18 @@ def test_sorted_padded_csv_file(padded_file_path):
             == list(spcf.get(start=14.5, stop=42))
             == [(15, [16, 14]), (19, [20, 18])]
         )
+
+
+def test_selector(
+    padded_file_path, sampled_padded_file_path, double_sampled_padded_file_path
+):
+    with selector(
+        {padded_file_path, sampled_padded_file_path, double_sampled_padded_file_path},
+        ("a", int),
+    ) as sel:
+        assert sel.get_nb_lines_between(5, 18) == {
+            Path(padded_file_path): 4,
+            Path(sampled_padded_file_path): 2,
+            Path(double_sampled_padded_file_path): 1,
+        }
+
