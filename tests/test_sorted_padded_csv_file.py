@@ -187,3 +187,16 @@ def test_selector(
             Path(double_sampled_padded_file_path): 1,
         }
 
+        assert sel.get_max_resolution_lines_between(0, 20, 4096) == padded_file_path
+        assert sel.get_max_resolution_lines_between(0, 20, 5) == padded_file_path
+        assert sel.get_max_resolution_lines_between(0, 20, 4) == padded_file_path
+
+        assert (
+            sel.get_max_resolution_lines_between(0, 20, 3) == sampled_padded_file_path
+        )
+
+        assert (
+            sel.get_max_resolution_lines_between(0, 20, 2)
+            == double_sampled_padded_file_path
+        )
+

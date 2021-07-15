@@ -256,6 +256,26 @@ class _Selector:
             for path, spcf in self.__path_to_spcf.items()
         }
 
+    def get_max_resolution_lines_between(
+        self, start: Any, stop: Any, resolution: int
+    ) -> Path:
+        """Return the first file where the number of lines between `start` and `stop`
+        is higher than `resolution`"""
+        path_to_nb_lines = self.get_nb_lines_between(start, stop)
+        file_max = max(path_to_nb_lines, key=path_to_nb_lines.get)
+
+        path_to_nb_lines_filtered = {
+            path: nb_lines
+            for path, nb_lines in path_to_nb_lines.items()
+            if nb_lines >= resolution
+        }
+
+        return (
+            min(path_to_nb_lines_filtered, key=path_to_nb_lines_filtered.get)
+            if len(path_to_nb_lines_filtered) > 0
+            else file_max
+        )
+
 
 @contextmanager
 def selector(paths: Set[Path], x_and_type: Tuple[str, type]) -> Iterator[_Selector]:
