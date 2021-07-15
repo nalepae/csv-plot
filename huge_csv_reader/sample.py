@@ -50,6 +50,7 @@ def sample(
 
         writer = csv.DictWriter(
             dest_file,
+            lineterminator="\n",
             fieldnames=[x]
             + [
                 item
@@ -133,7 +134,9 @@ def sample_sampled(source_path: Path, dest_path: Path, period: int) -> None:
         if trash:
             raise ValueError("Several Xs found in source file")
 
-        writer = csv.DictWriter(dest_file, fieldnames=reader.fieldnames)
+        writer = csv.DictWriter(
+            dest_file, lineterminator="\n", fieldnames=reader.fieldnames
+        )
         writer.writeheader()
 
         x_value = None
