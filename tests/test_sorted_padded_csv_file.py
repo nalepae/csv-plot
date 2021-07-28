@@ -4,7 +4,6 @@ from typing import IO
 import pytest
 from huge_csv_reader.sorted_padded_csv_file import (
     _SortedPaddedCSVFile,
-    selector,
     sorted_padded_csv_file,
 )
 from pytest import fixture
@@ -87,7 +86,13 @@ def test_slice(
     assert (
         sorted_padded_csv_file[:]
         == list(sorted_padded_csv_file.get())
-        == [(3, [4, 2]), (7, [8, 6]), (11, [12, 10]), (15, [16, 14]), (19, [20, 18]),]
+        == [
+            (3, [4, 2]),
+            (7, [8, 6]),
+            (11, [12, 10]),
+            (15, [16, 14]),
+            (19, [20, 18]),
+        ]
     )
 
     assert (
@@ -163,7 +168,9 @@ def test_number_of_lines_between(
 
 def test_sorted_padded_csv_file(padded_file_path):
     with sorted_padded_csv_file(
-        padded_file_path, ("c", int), [("d", int), ("b", int)],
+        padded_file_path,
+        ("c", int),
+        [("d", int), ("b", int)],
     ) as spcf:
         assert (
             spcf[15:19]
@@ -172,31 +179,3 @@ def test_sorted_padded_csv_file(padded_file_path):
             == list(spcf.get(start=14.5, stop=42))
             == [(15, [16, 14]), (19, [20, 18])]
         )
-
-
-def test_selector(
-    padded_file_path, sampled_padded_file_path, double_sampled_padded_file_path
-):
-    with selector(
-        {padded_file_path, sampled_padded_file_path, double_sampled_padded_file_path},
-        ("a", int),
-    ) as sel:
-        assert sel.get_nb_lines_between(5, 18) == {
-            Path(padded_file_path): 4,
-            Path(sampled_padded_file_path): 2,
-            Path(double_sampled_padded_file_path): 1,
-        }
-
-        assert sel.get_max_resolution_lines_between(0, 20, 4096) == padded_file_path
-        assert sel.get_max_resolution_lines_between(0, 20, 5) == padded_file_path
-        assert sel.get_max_resolution_lines_between(0, 20, 4) == padded_file_path
-
-        assert (
-            sel.get_max_resolution_lines_between(0, 20, 3) == sampled_padded_file_path
-        )
-
-        assert (
-            sel.get_max_resolution_lines_between(0, 20, 2)
-            == double_sampled_padded_file_path
-        )
-
