@@ -1,6 +1,7 @@
 from contextlib import ExitStack, contextmanager
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterator, Set, Tuple
+from typing import Any, Dict, Iterator, Tuple
 
 from huge_csv_reader.sorted_padded_csv_file import (
     _SortedPaddedCSVFile,
@@ -8,24 +9,19 @@ from huge_csv_reader.sorted_padded_csv_file import (
 )
 
 
+@dataclass
 class _Selector:
     """This class aims to help what sorted padded CSV file to choose regarding the
     number of lines available between start and stop.
     """
 
-    def __init__(self, path_to_spcf: Dict[Path, _SortedPaddedCSVFile]) -> None:
-        """Initializer
-
-        path_to_spcf: A dictionary where each key is a path to a file, and where each
-                      value is the correspondonding `_SortedPaddedCSVFile` object.
-        """
-        self.__path_to_spcf = path_to_spcf
+    path_to_spcf: Dict[Path, _SortedPaddedCSVFile]
 
     def get_nb_lines_between(self, start: Any, stop: Any) -> Dict[Path, int]:
         """Get the number of lines between `start` and `stop` for each file."""
         return {
             path: spcf.number_of_lines_between(start, stop)
-            for path, spcf in self.__path_to_spcf.items()
+            for path, spcf in self.path_to_spcf.items()
         }
 
     def get_max_resolution_lines_between(
