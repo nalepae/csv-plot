@@ -6,31 +6,46 @@ from tests import assets
 
 
 @fixture
-def padded_file_path() -> Path:
-    return Path(assets.__file__).parent / "padded.csv"
+def hashed_dir() -> Path:
+    return Path(assets.__file__).parent / "8bed00c4529bfd12bd70678a71eaf5af"
 
 
 @fixture
-def sampled_padded_file_path() -> Path:
-    return Path(assets.__file__).parent / "sampled_padded.csv"
+def padded_file_path(hashed_dir: Path) -> Path:
+    return hashed_dir / "0.csv"
 
 
 @fixture
-def double_sampled_padded_file_path() -> Path:
-    return Path(assets.__file__).parent / "double_sampled_padded.csv"
+def sampled_padded_file_path(hashed_dir: Path) -> Path:
+    return hashed_dir / "1.csv"
+
+
+@fixture
+def double_sampled_padded_file_path(hashed_dir: Path) -> Path:
+    return hashed_dir / "2.csv"
+
+
+@fixture
+def triple_sampled_padded_file_path(hashed_dir: Path) -> Path:
+    return hashed_dir / "3.csv"
 
 
 def test_selector(
-    padded_file_path, sampled_padded_file_path, double_sampled_padded_file_path
+    hashed_dir,
+    padded_file_path,
+    sampled_padded_file_path,
+    double_sampled_padded_file_path,
+    triple_sampled_padded_file_path,
 ):
     with selector(
-        {padded_file_path, sampled_padded_file_path, double_sampled_padded_file_path},
+        hashed_dir,
         ("a", int),
     ) as sel:
         assert sel.get_nb_lines_between(5, 18) == {
             Path(padded_file_path): 4,
             Path(sampled_padded_file_path): 2,
             Path(double_sampled_padded_file_path): 1,
+            Path(triple_sampled_padded_file_path): 0,
         }
 
         assert sel.get_max_resolution_lines_between(0, 20, 4096) == padded_file_path

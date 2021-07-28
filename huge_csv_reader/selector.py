@@ -2,8 +2,10 @@ from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import Any, Dict, Iterator, Set, Tuple
 
-from huge_csv_reader.sorted_padded_csv_file import (_SortedPaddedCSVFile,
-                                                    sorted_padded_csv_file)
+from huge_csv_reader.sorted_padded_csv_file import (
+    _SortedPaddedCSVFile,
+    sorted_padded_csv_file,
+)
 
 
 class _Selector:
@@ -48,11 +50,11 @@ class _Selector:
 
 
 @contextmanager
-def selector(paths: Set[Path], x_and_type: Tuple[str, type]) -> Iterator[_Selector]:
+def selector(dir_path: Path, x_and_type: Tuple[str, type]) -> Iterator[_Selector]:
     """Help to choose a file based on the number of lines between to X values.
 
     Usage:
-    with selector({Path1, Path2, ..., Pathn}, ("x", float)) as select:
+    with selector(dir_path, ("x", float)) as select:
         select.get_nb_of_lines_between(<start>, <stop>)
         # ==> {Path1: 42, Path2: 1664, ..., Pathn: 1986}
 
@@ -64,7 +66,7 @@ def selector(paths: Set[Path], x_and_type: Tuple[str, type]) -> Iterator[_Select
             path: stack.enter_context(
                 sorted_padded_csv_file(path, x_and_type, [x_and_type])
             )
-            for path in paths
+            for path in dir_path.glob("*.csv")
         }
 
         yield _Selector(path_to_spcf)
