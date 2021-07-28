@@ -1,22 +1,10 @@
 from pathlib import Path
-import os
-import hashlib
 from typing import List, Tuple
+
 from huge_csv_reader.pad import pad
 from huge_csv_reader.padded_text_file import padded_text_file
 from huge_csv_reader.sample import sample, sample_sampled
-
-
-def pseudo_hash(path: Path, string: str = "") -> str:
-    """Compute a pseudo hash based on :
-    - The file size
-    - The file last modificationdate
-    - A given string
-    
-    (Real hash is too long to compute for big file.)
-    """
-    string = "-".join([str(os.path.getsize(path)), str(os.path.getmtime(path)), string])
-    return str(hashlib.md5(bytes(string, "utf-8")).hexdigest())
+from huge_csv_reader.pseudo_hash import pseudo_hash
 
 
 def pad_and_sample(
@@ -26,7 +14,7 @@ def pad_and_sample(
     ys_and_types: List[Tuple[str, type]],
 ) -> None:
     """Pad and sample `source_csv_file_path` into `dest_dir_path` with `x`.
-    
+
     If the file is already sampled, this function does not resample it but exits
     immediately without error.
     """
