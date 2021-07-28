@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Set, Tuple
 
 from huge_csv_reader.pad import pad
 from huge_csv_reader.padded_text_file import padded_text_file
-from huge_csv_reader.sample import sample, sample_sampled
 from huge_csv_reader.pseudo_hash import pseudo_hash
+from huge_csv_reader.sample import sample, sample_sampled
 
 
 def pad_and_sample(
@@ -12,7 +12,7 @@ def pad_and_sample(
     dest_dir_path: Path,
     x: str,
     ys_and_types: List[Tuple[str, type]],
-) -> None:
+) -> Set[Path]:
     """Pad and sample `source_csv_file_path` into `dest_dir_path` with `x`.
 
     If the file is already sampled, this function does not resample it but exits
@@ -23,7 +23,7 @@ def pad_and_sample(
     try:
         dir_path.mkdir(parents=True)
     except FileExistsError:
-        return
+        return set(dir_path.glob("*.csv"))
 
     padded_path = dir_path / "0.csv"
     sampled_path = dir_path / "1.csv"
@@ -53,3 +53,5 @@ def pad_and_sample(
             nb_lines = len(ptf)
 
         epoch += 1
+
+    return set(dir_path.glob("*.csv"))

@@ -54,9 +54,26 @@ def _3(hashed: Path):
 def test_pad_and_sample(
     tmp_path: Path, not_padded_file_path: Path, _0: Path, _1: Path, _2: Path, _3: Path
 ):
-    pad_and_sample(not_padded_file_path, tmp_path, "a", [("b", float), ("d", float)])
+    paths = {
+        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / f"{index}.csv"
+        for index in range(4)
+    }
+
+    assert (
+        pad_and_sample(
+            not_padded_file_path, tmp_path, "a", [("b", float), ("d", float)]
+        )
+        == paths
+    )
+
     assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "0.csv", _0)
     assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "1.csv", _1)
     assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "2.csv", _2)
     assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "3.csv", _3)
-    pad_and_sample(not_padded_file_path, tmp_path, "a", [("b", float), ("d", float)])
+
+    assert (
+        pad_and_sample(
+            not_padded_file_path, tmp_path, "a", [("b", float), ("d", float)]
+        )
+        == paths
+    )
