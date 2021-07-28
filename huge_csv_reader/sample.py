@@ -12,7 +12,7 @@ def sample(
     period: int,
 ) -> None:
     """Sample a CSV file every `period` line.
-    
+
     Example:
     With the following CSV corresponding to `source_path`:
     x,a,b,c,d
@@ -100,7 +100,7 @@ def sample(
 
 def sample_sampled(source_path: Path, dest_path: Path, period: int) -> None:
     """Sample an already sampled CSV file every `period` line.
-    
+
     Example:
     With the following CSV corresponding to `source_path`:
     a,b_min,b_max,d_min,d_max
@@ -120,9 +120,11 @@ def sample_sampled(source_path: Path, dest_path: Path, period: int) -> None:
 
         assert reader.fieldnames
 
+        field_names = [field_name.strip() for field_name in reader.fieldnames]
+
         xs = [
             item
-            for item in reader.fieldnames
+            for item in field_names
             if not (item.endswith("_min") or item.endswith("_max"))
         ]
 
@@ -134,9 +136,7 @@ def sample_sampled(source_path: Path, dest_path: Path, period: int) -> None:
         if trash:
             raise ValueError("Several Xs found in source file")
 
-        writer = csv.DictWriter(
-            dest_file, lineterminator="\n", fieldnames=reader.fieldnames
-        )
+        writer = csv.DictWriter(dest_file, lineterminator="\n", fieldnames=field_names)
         writer.writeheader()
 
         x_value = None
