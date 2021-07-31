@@ -15,10 +15,10 @@ class Side(Enum):
 class _SortedPaddedCSVFile:
     """Represent a padded CSV file with one sorted column, where all lines are reachable
     through the sorted column with O(log(n)) complexity.
-    
+
     A padded CSV file is a CSV file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
-    The last line MUST also contain a carriage return.    
+    The last line MUST also contain a carriage return.
 
     Only line(s) you request will be load in memory.
 
@@ -30,22 +30,22 @@ class _SortedPaddedCSVFile:
                                                  )
 
     Example: With the following file represented by <file_descriptor>:
-    a,b,c,d    
-    1,2,3,4    
-    5,6,7,8    
-    9,10,11,12 
+    a,b,c,d
+    1,2,3,4
+    5,6,7,8
+    9,10,11,12
     13,14,15,16
     17,18,19,20
 
     Here all columns are sorted, but in this example, only the column "c" has to be.
-    sorted_padded_csv_file = _SortedPaddedCSVFile(<file_descriptor>, 
+    sorted_padded_csv_file = _SortedPaddedCSVFile(<file_descriptor>,
                                                   <file_size>,
                                                   ("c", int)
                                                   [("d", int), ("b", int)]
                                                  )
 
     # Get the number of lines
-    len(sorted_padded_csv_file) # = 5    
+    len(sorted_padded_csv_file) # = 5
 
     # Get the line corresponding to c == 7
     sorted_padded_csv_file[7] # = (3, [8, 6])
@@ -81,8 +81,8 @@ class _SortedPaddedCSVFile:
                            - The type of the column on which requests will be done
         ys_and_types     : A list of tuples where each tuple has:
                            - The name of the column
-                           - The type of the column          
-        
+                           - The type of the column
+
         If at least one line of the file pointed by `file_descriptor` has not the same
         length than others, a `TextFileNotPaddedError` is raised.
         """
@@ -121,7 +121,7 @@ class _SortedPaddedCSVFile:
     ) -> Union[Tuple[Any, List], List[Tuple[Any, List]]]:
         """Get the line where `x` equals `x_or_slice`, or get all the lines where
         `slice.start <= x <= slice.stop`.
-        
+
         line_number_or_slice: The x value(s) corresponding to the lines to retrieve
         """
 
@@ -170,7 +170,7 @@ class _SortedPaddedCSVFile:
         """Get the number of lines between `start` and `stop`.
 
         start: The value of `x` corresponding to the first line
-        stop : The value of `x` corresponding to the last line    
+        stop : The value of `x` corresponding to the last line
         """
         start_, stop_ = self.__get_start_stop(slice(start, stop))
         return (stop_ if stop_ is not None else len(self)) - (
@@ -180,26 +180,28 @@ class _SortedPaddedCSVFile:
 
 @contextmanager
 def sorted_padded_csv_file(
-    path: Path, x_and_type: Tuple[str, type], ys_and_types: List[Tuple[str, type]],
+    path: Path,
+    x_and_type: Tuple[str, type],
+    ys_and_types: List[Tuple[str, type]],
 ) -> Iterator[_SortedPaddedCSVFile]:
     """Represent a padded CSV file with one sorted column, where all lines are reachable
     through the sorted column with O(log(n)) complexity.
-    
+
     A padded CSV file is a CSV file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
-    The last line MUST also contain a carriage return.    
+    The last line MUST also contain a carriage return.
 
     Only line(s) you request will be load in memory.
 
     Usage:
     with sorted_padded_csv_file as spcf:
         ...
-    
+
     Example: With the following file represented by <file_descriptor>:
-    a,b,c,d    
-    1,2,3,4    
-    5,6,7,8    
-    9,10,11,12 
+    a,b,c,d
+    1,2,3,4
+    5,6,7,8
+    9,10,11,12
     13,14,15,16
     17,18,19,20
 
@@ -207,7 +209,7 @@ def sorted_padded_csv_file(
 
     with sorted_padded_csv_file(<file_path>, ("c", int), [("d", int), ("b", int)]) as spcf:
         # Get the number of lines
-        len(spcf) # = 5    
+        len(spcf) # = 5
 
         # Get the line corresponding to c == 7
         spcf[7] # = (3, [8, 6])

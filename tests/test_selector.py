@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from huge_csv_reader.selector import selector
+from huge_csv_reader.selector import selector, Selected
 from pytest import fixture
 from tests import assets
 
@@ -10,53 +10,70 @@ def hashed_dir() -> Path:
     return Path(assets.__file__).parent / "8bed00c4529bfd12bd70678a71eaf5af"
 
 
-@fixture
-def padded_file_path(hashed_dir: Path) -> Path:
-    return hashed_dir / "0.csv"
-
-
-@fixture
-def sampled_padded_file_path(hashed_dir: Path) -> Path:
-    return hashed_dir / "1.csv"
-
-
-@fixture
-def double_sampled_padded_file_path(hashed_dir: Path) -> Path:
-    return hashed_dir / "2.csv"
-
-
-@fixture
-def triple_sampled_padded_file_path(hashed_dir: Path) -> Path:
-    return hashed_dir / "3.csv"
-
-
-def test_selector(
-    hashed_dir,
-    padded_file_path,
-    sampled_padded_file_path,
-    double_sampled_padded_file_path,
-    triple_sampled_padded_file_path,
-):
-    with selector(
-        hashed_dir,
-        ("a", int),
-    ) as sel:
-        assert sel.get_nb_lines_between(5, 18) == {
-            Path(padded_file_path): 4,
-            Path(sampled_padded_file_path): 2,
-            Path(double_sampled_padded_file_path): 1,
-            Path(triple_sampled_padded_file_path): 0,
-        }
-
-        assert sel.get_max_resolution_lines_between(0, 20, 4096) == padded_file_path
-        assert sel.get_max_resolution_lines_between(0, 20, 5) == padded_file_path
-        assert sel.get_max_resolution_lines_between(0, 20, 4) == padded_file_path
-
-        assert (
-            sel.get_max_resolution_lines_between(0, 20, 3) == sampled_padded_file_path
+def test_selector(hashed_dir):
+    with selector(hashed_dir, ("a", int), [("b", float), ("d", float)], 100) as sel:
+        assert sel[:] == Selected(
+            xs=[1, 5, 9, 13, 17],
+            name_to_y={
+                "b": Selected.Y(mins=[2, 6, 10, 14, 18], maxs=[2, 6, 10, 14, 18]),
+                "d": Selected.Y(mins=[4, 8, 12, 16, 20], maxs=[4, 8, 12, 16, 20]),
+            },
         )
 
         assert (
-            sel.get_max_resolution_lines_between(0, 20, 2)
-            == double_sampled_padded_file_path
+            sel[5:13]
+            == sel[4.5:13.5]
+            == Selected(
+                xs=[5, 9, 13],
+                name_to_y={
+                    "b": Selected.Y(mins=[6, 10, 14], maxs=[6, 10, 14]),
+                    "d": Selected.Y(mins=[8, 12, 16], maxs=[8, 12, 16]),
+                },
+            )
+        )
+
+        sel.resolution = 4
+
+        assert sel[:] == Selected(
+            xs=[1, 5, 9, 13, 17],
+            name_to_y={
+                "b": Selected.Y(mins=[2, 6, 10, 14, 18], maxs=[2, 6, 10, 14, 18]),
+                "d": Selected.Y(mins=[4, 8, 12, 16, 20], maxs=[4, 8, 12, 16, 20]),
+            },
+        )
+
+        assert (
+            sel[5:13]
+            == sel[4.5:13.5]
+            == Selected(
+                xs=[5, 9, 13],
+                name_to_y={
+                    "b": Selected.Y(mins=[6, 10, 14], maxs=[6, 10, 14]),
+                    "d": Selected.Y(mins=[8, 12, 16], maxs=[8, 12, 16]),
+                },
+            )
+        )
+
+        sel.resolution = 3
+
+        assert sel[:] == Selected(
+            xs=[1, 9, 17],
+            name_to_y={
+                "b": Selected.Y(mins=[2, 10, 18], maxs=[6, 14, 18]),
+                "d": Selected.Y(mins=[4, 12, 20], maxs=[8, 16, 20]),
+            },
+        )
+
+        sel.resolution = 2
+
+        assert (
+            sel[1:9]
+            == sel[0.5:9.5]
+            == Selected(
+                xs=[1, 9],
+                name_to_y={
+                    "b": Selected.Y(mins=[2, 10], maxs=[6, 14]),
+                    "d": Selected.Y(mins=[4, 12], maxs=[8, 16]),
+                },
+            )
         )
