@@ -184,6 +184,8 @@ class _Selector:
         )
 
     def __getitem__(self, x_or_slice: Union[Any, slice]) -> Selected:
+        """Return a Selected object where the number of lines are as close as (but
+        always greater than) the resolution."""
         assert isinstance(x_or_slice, slice), "Only slice is supported for `x_or_slice`"
 
         start, stop = x_or_slice.start, x_or_slice.stop
