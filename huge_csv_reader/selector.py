@@ -220,6 +220,111 @@ def selector(
     ys_and_types: List[Tuple[str, type]],
     resolution: int,
 ) -> Iterator[_Selector]:
+    """Select the sampled file matching as close as possible a given resolution.
+
+    dir_path   : Directory where all the files (sampled and non sampled) are located.
+                 Non sampled path name's HAS to be `0.csv`
+
+    x_and_type : Name and the type of X value
+    ys_and_type: Names and Y types
+    resolution : Resolution to be as close as possible
+
+    Usage:
+    ======
+
+    File 0.csv:
+    -----------
+    a,b,c,d
+    1,2,3,4
+    5,6,7,8
+    9,10,11,12
+    13,14,15,16
+    17,18,19,20
+
+    File 1.csv:
+    -----------
+    a,b_min,b_max,d_min,d_max
+    1,2.0,6.0,4.0,8.0
+    9,10.0,14.0,12.0,16.0
+    17,18.0,18.0,20.0,20.0
+
+    File 2.csv:
+    -----------
+    a,b_min,b_max,d_min,d_max
+    1,2.0,14.0,4.0,16.0
+    17,18.0,18.0,20.0,20.0
+
+    File 3.csv:
+    -----------
+    a,b_min,b_max,d_min,d_max
+    1,2.0,18.0,4.0,20.0
+
+    dir_path
+    |
+    |- 0.csv
+    |- 1.csv
+    |- 2.csv
+    |- 3.csv
+
+    with selector(dir_path, ("a", int), [("b", float), ("d", float)], 100) as sel:
+        sel[:] == Selected(
+                    xs=[1, 5, 9, 13, 17],
+                    name_to_y={
+                    "b": Selected.Y(mins=[2, 6, 10, 14, 18], maxs=[2, 6, 10, 14, 18]),
+                    "d": Selected.Y(mins=[4, 8, 12, 16, 20], maxs=[4, 8, 12, 16, 20]),
+                    },
+                )
+
+        sel[5:13] == sel[4.5:13.5]
+                  == Selected(
+                       xs=[5, 9, 13],
+                       name_to_y={
+                         "b": Selected.Y(mins=[6, 10, 14], maxs=[6, 10, 14]),
+                         "d": Selected.Y(mins=[8, 12, 16], maxs=[8, 12, 16]),
+                       },
+                     )
+
+        sel.resolution = 4
+
+        sel[:] == Selected(
+                    xs=[1, 5, 9, 13, 17],
+                    name_to_y={
+                      "b": Selected.Y(mins=[2, 6, 10, 14, 18], maxs=[2, 6, 10, 14, 18]),
+                      "d": Selected.Y(mins=[4, 8, 12, 16, 20], maxs=[4, 8, 12, 16, 20]),
+                    },
+                  )
+
+        sel[5:13] == sel[4.5:13.5]
+                  == Selected(
+                       xs=[5, 9, 13],
+                       name_to_y={
+                         "b": Selected.Y(mins=[6, 10, 14], maxs=[6, 10, 14]),
+                         "d": Selected.Y(mins=[8, 12, 16], maxs=[8, 12, 16]),
+                       },
+                     )
+
+        sel.resolution = 3
+
+        sel[:] == Selected(
+                    xs=[1, 9, 17],
+                    name_to_y={
+                      "b": Selected.Y(mins=[2, 10, 18], maxs=[6, 14, 18]),
+                      "d": Selected.Y(mins=[4, 12, 20], maxs=[8, 16, 20]),
+                    },
+                  )
+
+        sel.resolution = 2
+
+        sel[1:9] == sel[0.5:9.5]
+                 == Selected(
+                      xs=[1, 9],
+                      name_to_y={
+                        "b": Selected.Y(mins=[2, 10], maxs=[6, 14]),
+                        "d": Selected.Y(mins=[4, 12], maxs=[8, 16]),
+                      },
+                    )
+
+    """
     name = "0.csv"
 
     paths = list(dir_path.glob("*.csv"))
