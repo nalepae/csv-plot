@@ -22,8 +22,107 @@ class Selected(BaseModel):
 
 
 class _Selector:
-    """This class aims to help what sorted padded CSV file to choose regarding the
-    number of lines available between start and stop.
+    """This class is a helper to get the requested data as closest as possible to a
+    given resolution.
+
+    Usage:
+    ======
+
+    File 0.csv:
+    -----------
+    a,b,c,d
+    1,2,3,4
+    5,6,7,8
+    9,10,11,12
+    13,14,15,16
+    17,18,19,20
+
+    File 1.csv:
+    -----------
+    a,b_min,b_max,d_min,d_max
+    1,2.0,6.0,4.0,8.0
+    9,10.0,14.0,12.0,16.0
+    17,18.0,18.0,20.0,20.0
+
+    File 2.csv:
+    -----------
+    a,b_min,b_max,d_min,d_max
+    1,2.0,14.0,4.0,16.0
+    17,18.0,18.0,20.0,20.0
+
+    File 3.csv:
+    -----------
+    a,b_min,b_max,d_min,d_max
+    1,2.0,18.0,4.0,20.0
+
+    sel = Selector(
+            <spcf corresponding to `0.csv`>,
+            [("b", float), ("d", float)],
+            {
+              <spcf corresponding to `2.csv`>,
+              <spcf corresponding to `3.csv`>,
+              <spcf corresponding to `4.csv`>
+            },
+            [("b_min", float), ("b_max", float), ("d_min", float), ("d_max", float)],
+            6,
+          )
+
+    sel[:] == Selected(
+                xs=[1, 5, 9, 13, 17],
+                name_to_y={
+                  "b": Selected.Y(mins=[2, 6, 10, 14, 18], maxs=[2, 6, 10, 14, 18]),
+                  "d": Selected.Y(mins=[4, 8, 12, 16, 20], maxs=[4, 8, 12, 16, 20]),
+                },
+              )
+
+    sel[5:13] == sel[4.5:13.5]
+              == Selected(
+                   xs=[5, 9, 13],
+                   name_to_y={
+                     "b": Selected.Y(mins=[6, 10, 14], maxs=[6, 10, 14]),
+                     "d": Selected.Y(mins=[8, 12, 16], maxs=[8, 12, 16]),
+                   },
+                 )
+
+    sel.resolution = 4
+
+    sel[:] == Selected(
+                xs=[1, 5, 9, 13, 17],
+                name_to_y={
+                  "b": Selected.Y(mins=[2, 6, 10, 14, 18], maxs=[2, 6, 10, 14, 18]),
+                  "d": Selected.Y(mins=[4, 8, 12, 16, 20], maxs=[4, 8, 12, 16, 20]),
+                },
+              )
+
+    sel[5:13] == sel[4.5:13.5]
+              == Selected(
+                   xs=[5, 9, 13],
+                   name_to_y={
+                     "b": Selected.Y(mins=[6, 10, 14], maxs=[6, 10, 14]),
+                     "d": Selected.Y(mins=[8, 12, 16], maxs=[8, 12, 16]),
+                   },
+                 )
+
+    sel.resolution = 3
+
+    sel[:] == Selected(
+                xs=[1, 9, 17],
+                name_to_y={
+                  "b": Selected.Y(mins=[2, 10, 18], maxs=[6, 14, 18]),
+                  "d": Selected.Y(mins=[4, 12, 20], maxs=[8, 16, 20]),
+                },
+              )
+
+    sel.resolution = 2
+
+    sel[1:9] == sel[0.5:9.5]
+             == Selected(
+                  xs=[1, 9],
+                  name_to_y={
+                    "b": Selected.Y(mins=[2, 10], maxs=[6, 14]),
+                    "d": Selected.Y(mins=[4, 12], maxs=[8, 16]),
+                  },
+                )
     """
 
     def __init__(
@@ -34,6 +133,19 @@ class _Selector:
         sampled_ys_and_types: List[Tuple[str, type]],
         resolution: int,
     ) -> None:
+        """Initializer:
+
+        spcf                : A (non sampled) Sorted Padded CSV file
+        ys_and_type         : Y names and Y types of `spcf` file
+
+        sampled_spcfs       : A set of sampled Sorted Padded CSV files corresponding to
+                              spcf
+
+        sampled_ys_and_types: Y names an Y types corresponding to sampled_spcfs files
+                              Note: This value has to be the same for all sampled_spcfs
+
+        resolution          : The number of lines to be eventually extracted.
+        """
         self.__spcf = spcf
         self.__sampled_spcfs = sampled_spcfs
         self.__all_spcfs = self.__sampled_spcfs.union({self.__spcf})
@@ -54,8 +166,8 @@ class _Selector:
     def __get_max_resolution_lines_between(
         self, start: Any, stop: Any
     ) -> _SortedPaddedCSVFile:
-        """Return the first file where the number of lines between `start` and `stop`
-        is higher than `resolution`"""
+        """Return the smallest Sorted Padded CSV file where the number of lines between
+        `start` and `stop` is higher than `resolution`"""
         spcf_to_nb_lines = self.__get_nb_lines_between(start, stop)
         spcf_max = max(spcf_to_nb_lines, key=spcf_to_nb_lines.get)  # type: ignore
 
