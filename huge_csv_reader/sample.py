@@ -120,7 +120,7 @@ def sample_sampled(source_path: Path, dest_path: Path, period: int) -> None:
 
         assert reader.fieldnames
 
-        field_names = [field_name.strip() for field_name in reader.fieldnames]
+        field_names = reader.fieldnames
 
         xs = [
             item
