@@ -1,8 +1,7 @@
 from contextlib import ExitStack, contextmanager
-from dataclasses import dataclass
-from itertools import groupby
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Set, Tuple, Union
+from typing import Any, Dict, Iterator, List, Set, Tuple, Union
 
 from pydantic import BaseModel
 
@@ -17,7 +16,7 @@ class Selected(BaseModel):
         mins: List[float]
         maxs: List[float]
 
-    xs: List[float]
+    xs: Union[List[float], List[datetime]]
     name_to_y: Dict[str, Y]
 
 
@@ -328,7 +327,6 @@ def selector(
 
     """
     name = "0.csv"
-
     paths = list(dir_path.glob("*.csv"))
     path, *trash = [path for path in paths if path.name == name]
     sampled_paths = [path for path in paths if path.name != name]
