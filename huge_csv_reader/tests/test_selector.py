@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from huge_csv_reader.selector import selector, Selected
+from huge_csv_reader.selector import Selected, selector
+from huge_csv_reader.tests import assets
 from pytest import fixture
-from tests import assets
 
 
 @fixture

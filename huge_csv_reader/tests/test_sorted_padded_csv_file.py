@@ -6,9 +6,8 @@ from huge_csv_reader.sorted_padded_csv_file import (
     _SortedPaddedCSVFile,
     sorted_padded_csv_file,
 )
+from huge_csv_reader.tests import assets
 from pytest import fixture
-
-from tests import assets
 
 
 @fixture

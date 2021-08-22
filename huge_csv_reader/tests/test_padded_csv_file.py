@@ -7,9 +7,8 @@ from huge_csv_reader.padded_csv_file import (
     _PaddedCSVFile,
     padded_csv_file,
 )
+from huge_csv_reader.tests import assets
 from pytest import fixture
-
-from tests import assets
 
 
 @fixture

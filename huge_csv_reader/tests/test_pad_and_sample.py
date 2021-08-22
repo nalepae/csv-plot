@@ -11,9 +11,8 @@ from huge_csv_reader.pad_and_sample import (
     sample,
     sample_sampled,
 )
+from huge_csv_reader.tests import assets
 from pytest import fixture
-
-from tests import assets
 
 
 @fixture
