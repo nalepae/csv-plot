@@ -7,7 +7,7 @@ from shutil import copy2
 from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional, Set, Tuple
 
-from easy_plot.csv.padded_text_file import padded_text_file
+from .padded_text_file import padded_text_file
 
 
 def pseudo_hash(path: Path, string: str = "") -> str:

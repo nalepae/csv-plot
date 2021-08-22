@@ -13,7 +13,7 @@ class TextFileNotPaddedError(Exception):
 
 class _PaddedTextFile:
     """Represent a padded text file, where lines are reachable with O(1) complexity.
-    
+
     A padded text file is a text file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
     The last line MUST also contain a carriage return.
@@ -51,9 +51,9 @@ class _PaddedTextFile:
         file_size      : The file size (in bytes) of the padded CSV file pointed by
                          `file_descriptor`
         offset         : The number of first line(s) to skip. Must be >= 0
-        
-        If not 0 <= `offset` <= number of lines, an `OffsetError` is raised. 
-        
+
+        If not 0 <= `offset` <= number of lines, an `OffsetError` is raised.
+
         If at least one line of the file pointed by `file_descriptor` has not the same
         length than others, a `TextFileNotPaddedError` is raised.
         """
@@ -109,7 +109,7 @@ class _PaddedTextFile:
         self, line_number_or_slice: Union[int, slice]
     ) -> Union[str, List[str]]:
         """Get a given line or a given slice of lines.
-        
+
         line_number_or_slice: The line number or the slice where lines will be retrieved
         """
 
@@ -140,7 +140,7 @@ class _PaddedTextFile:
         self, start: Optional[int] = None, stop: Optional[int] = None
     ) -> Iterator[str]:
         """Return an iterator on a given slice of lines.
-        
+
         start: The first line of slice (included)
         stop : The last line of slice (excluded)
         """
@@ -149,7 +149,7 @@ class _PaddedTextFile:
 
     def __move_cursor(self, line_number: int) -> None:
         """Move cursor of file descriptor to `line_number`.
-        
+
         line_number: The line number where to move the cursor
         """
         self.__file_descriptor.seek(self.__line_size * line_number, 0)
@@ -158,7 +158,7 @@ class _PaddedTextFile:
 @contextmanager
 def padded_text_file(path: Path, offset: int = 0) -> Iterator[_PaddedTextFile]:
     """Represent a padded text file, where lines are reachable with O(1) complexity.
-    
+
     A padded text file is a text file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
     The last line MUST also contain a carriage return.

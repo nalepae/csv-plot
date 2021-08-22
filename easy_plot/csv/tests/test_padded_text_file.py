@@ -2,14 +2,15 @@ from pathlib import Path
 from typing import IO
 
 import pytest
-from easy_plot.csv.padded_text_file import (
+from easy_plot.csv.tests import assets
+from pytest import fixture
+
+from ..padded_text_file import (
     OffsetError,
     TextFileNotPaddedError,
     _PaddedTextFile,
     padded_text_file,
 )
-from easy_plot.csv.tests import assets
-from pytest import fixture
 
 
 @fixture

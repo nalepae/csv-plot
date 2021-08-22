@@ -5,10 +5,7 @@ from typing import Any, Dict, Iterator, List, Set, Tuple, Union
 
 from pydantic import BaseModel
 
-from easy_plot.csv.sorted_padded_csv_file import (
-    _SortedPaddedCSVFile,
-    sorted_padded_csv_file,
-)
+from .sorted_padded_csv_file import _SortedPaddedCSVFile, sorted_padded_csv_file
 
 
 class Selected(BaseModel):

@@ -1,10 +1,10 @@
 from bisect import bisect_left, bisect_right
-from contextlib import ExitStack, contextmanager
+from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
 from typing import IO, Any, Dict, Iterator, List, Optional, Set, Tuple, Union
 
-from easy_plot.csv.padded_csv_file import _PaddedCSVFile
+from .padded_csv_file import _PaddedCSVFile
 
 
 class Side(Enum):

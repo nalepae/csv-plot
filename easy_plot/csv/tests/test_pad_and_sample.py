@@ -4,7 +4,7 @@ from pathlib import Path
 from shutil import copy2
 
 import pytest
-from easy_plot.csv.pad_and_sample import (
+from ..pad_and_sample import (
     pad,
     pad_and_sample,
     pseudo_hash,
