@@ -4,14 +4,14 @@ from pathlib import Path
 from shutil import copy2
 
 import pytest
-from huge_csv_reader.pad_and_sample import (
+from easy_plot.pad_and_sample import (
     pad,
     pad_and_sample,
     pseudo_hash,
     sample,
     sample_sampled,
 )
-from huge_csv_reader.tests import assets
+from easy_plot.tests import assets
 from pytest import fixture
 
 

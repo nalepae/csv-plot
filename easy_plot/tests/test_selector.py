@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from huge_csv_reader.selector import Selected, selector
-from huge_csv_reader.tests import assets
+from easy_plot.selector import Selected, selector
+from easy_plot.tests import assets
 from pytest import fixture
 
 

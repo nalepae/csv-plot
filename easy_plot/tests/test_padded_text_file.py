@@ -2,13 +2,13 @@ from pathlib import Path
 from typing import IO
 
 import pytest
-from huge_csv_reader.padded_text_file import (
+from easy_plot.padded_text_file import (
     OffsetError,
     TextFileNotPaddedError,
     _PaddedTextFile,
     padded_text_file,
 )
-from huge_csv_reader.tests import assets
+from easy_plot.tests import assets
 from pytest import fixture
 
 

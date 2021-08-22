@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, IO, Iterator, List, Optional, Tuple, Union, cast
-from huge_csv_reader.padded_text_file import _PaddedTextFile
+from easy_plot.padded_text_file import _PaddedTextFile
 
 
 class ColumnNotFoundError(Exception):
@@ -10,7 +10,7 @@ class ColumnNotFoundError(Exception):
 
 class _PaddedCSVFile:
     """Represent a padded CSV file, where lines are reachable with O(1) complexity.
-    
+
     A padded CSV file is a CSV file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
     The last line MUST also contain a carriage return.
@@ -24,14 +24,14 @@ class _PaddedCSVFile:
                                     )
 
     Example: With the following file represented by <file_descriptor>:
-    a,b,c,d    
-    1,2,3,4    
-    5,6,7,8    
-    9,10,11,12 
+    a,b,c,d
+    1,2,3,4
+    5,6,7,8
+    9,10,11,12
     13,14,15,16
     17,18,19,20
 
-    padded_csv_file = _PaddedCSVFile(<file_descriptor>, 
+    padded_csv_file = _PaddedCSVFile(<file_descriptor>,
                                      <file_size>,
                                      [("d", int), ("b", int)]
                                     )
@@ -46,14 +46,14 @@ class _PaddedCSVFile:
     padded_csv_file[-1] # = [20, 18]
 
     # Get an iterator on lines between the third line (included) and the last line
-    # (excluded) 
+    # (excluded)
     padded_csv_file.get(start=2, stop=-1)
 
     # Get all lines between the third line (included) and the last line (excluded)
     # Warning: All lines in the selected range will be loaded into memory.
     #          For example: padded_csv_file[:] will load all the file in memory.
     #          If possible, use padded_csv_file.get(start=a, stop=b) instead of
-    #                           padded_csv_file[a, b]       
+    #                           padded_csv_file[a, b]
     padded_csv_file[2:-1] # = [[12, 10], [16, 14]]
     """
 
@@ -71,11 +71,11 @@ class _PaddedCSVFile:
                          `file_descriptor`
         column_and_type: A list of tuples where each tuple has:
                          - The name of the column
-                         - The type of the column     
+                         - The type of the column
         unwrap_if_one_column: Unwrap if only one column unwrap result.
                               Exemple: Instead of returning [[4], [5], [2]] return
-                                       [4, 5, 2]            
-        
+                                       [4, 5, 2]
+
         If at least one line of the file pointed by `file_descriptor` has not the same
         length than others, a `TextFileNotPaddedError` is raised.
         """
@@ -112,7 +112,7 @@ class _PaddedCSVFile:
         self, line_number_or_slice: Union[int, slice]
     ) -> Union[Any, List, List[List]]:
         """Get given values or a given slice of values.
-        
+
         line_number_or_slice: The line number or the slice where values will be
                               retrieved
         """
@@ -159,7 +159,7 @@ class _PaddedCSVFile:
         self, start: Optional[int] = None, stop: Optional[int] = None
     ) -> Iterator[List]:
         """Return an iterator on a given slice of lines.
-        
+
         start: The first line of slice (included)
         stop : The last line of slice (excluded)
         """
@@ -174,7 +174,7 @@ def padded_csv_file(
     path: Path, column_and_type: List[Tuple[str, type]]
 ) -> Iterator[_PaddedCSVFile]:
     """Represent a padded CSV file, where lines are reachable with O(1) complexity.
-    
+
     A padded CSV file is a CSV file where all lines have exactly the same length.
     In general, lines are right padded with white spaces.
     The last line MUST also contain a carriage return.
@@ -186,10 +186,10 @@ def padded_csv_file(
         ...
 
     Example: With the following file represented by <file_descriptor>:
-    a,b,c,d    
-    1,2,3,4    
-    5,6,7,8    
-    9,10,11,12 
+    a,b,c,d
+    1,2,3,4
+    5,6,7,8
+    9,10,11,12
     13,14,15,16
     17,18,19,20
 
@@ -204,14 +204,14 @@ def padded_csv_file(
         pcf[-1] # = [20, 18]
 
         # Get an iterator on lines between the third line (included) and the last line
-        # (excluded) 
+        # (excluded)
         pcf.get(start=2, stop=-1)
 
         # Get all lines between the third line (included) and the last line (excluded)
         # Warning: All lines in the selected range will be loaded into memory.
         #          For example: padded_csv_file[:] will load all the file in memory.
         #          If possible, use pcf.get(start=a, stop=b) instead of
-        #                           pcf[a, b]       
+        #                           pcf[a, b]
         pcf[2:-1] # = [[12, 10], [16, 14]]
     """
     try:

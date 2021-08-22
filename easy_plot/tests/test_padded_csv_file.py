@@ -2,12 +2,12 @@ from pathlib import Path
 from typing import IO
 
 import pytest
-from huge_csv_reader.padded_csv_file import (
+from easy_plot.padded_csv_file import (
     ColumnNotFoundError,
     _PaddedCSVFile,
     padded_csv_file,
 )
-from huge_csv_reader.tests import assets
+from easy_plot.tests import assets
 from pytest import fixture
 
 

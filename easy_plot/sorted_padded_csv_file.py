@@ -4,7 +4,7 @@ from enum import Enum
 from pathlib import Path
 from typing import IO, Any, Dict, Iterator, List, Optional, Set, Tuple, Union
 
-from huge_csv_reader.padded_csv_file import _PaddedCSVFile
+from easy_plot.padded_csv_file import _PaddedCSVFile
 
 
 class Side(Enum):

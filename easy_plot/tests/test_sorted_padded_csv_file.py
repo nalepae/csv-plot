@@ -2,11 +2,11 @@ from pathlib import Path
 from typing import IO
 
 import pytest
-from huge_csv_reader.sorted_padded_csv_file import (
+from easy_plot.sorted_padded_csv_file import (
     _SortedPaddedCSVFile,
     sorted_padded_csv_file,
 )
-from huge_csv_reader.tests import assets
+from easy_plot.tests import assets
 from pytest import fixture
 
 
