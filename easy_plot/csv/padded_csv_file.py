@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, IO, Iterator, List, Optional, Tuple, Union, cast
-from easy_plot.padded_text_file import _PaddedTextFile
+from typing import IO, Any, Iterator, List, Optional, Tuple, Union, cast
+
+from easy_plot.csv.padded_text_file import _PaddedTextFile
 
 
 class ColumnNotFoundError(Exception):

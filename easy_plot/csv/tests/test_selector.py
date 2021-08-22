@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from easy_plot.selector import Selected, selector
-from easy_plot.tests import assets
+from easy_plot.csv.selector import Selected, selector
+from easy_plot.csv.tests import assets
 from pytest import fixture
 
 
