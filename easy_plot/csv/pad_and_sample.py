@@ -13,7 +13,7 @@ from .padded_text_file import padded_text_file
 def pseudo_hash(path: Path, string: str = "") -> str:
     """Compute a pseudo hash based on :
     - The file size
-    - The file last modificationdate
+    - The file last modification date
     - A given string
 
     (Real hash is too long to compute for big file.)
