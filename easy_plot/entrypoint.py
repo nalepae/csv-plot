@@ -152,14 +152,19 @@ def main(
 ):
     """🌊 Easy Plot - Plot CSV files without headaches! 🏄"""
 
-    # Get CSV file columns name
+    # Get CSV file columns names corresponding to floats
+    def is_castable_to_float(value: str) -> bool:
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+
     with csv_path.open() as csv_file:
         reader = DictReader(csv_file)
+        first_row = next(reader)
 
-        columns_list = reader.fieldnames
-
-    assert columns_list is not None
-    columns = set(columns_list)
+    columns = {name for name, value in first_row.items() if is_castable_to_float(value)}
 
     # Get configurations files
     configuration_files = (
@@ -262,7 +267,7 @@ def main(
                 col=layout_item.y - 1,
                 axisItems={"bottom": DateAxisItem()},
             )
-            if chosen_configuration.general.date_time_format is not None
+            if chosen_configuration.general.date_time_formats is not None
             else win.addPlot(
                 row=layout_item.x - 1,
                 col=layout_item.y - 1,
@@ -305,11 +310,22 @@ def main(
 
         variable_to_low_high[curve.variable] = low, high
 
-    date_format = chosen_configuration.general.date_time_format
+    date_time_formats = chosen_configuration.general.date_time_formats
+
+    def date_time_parser(x: str, date_time_formats: List[str]) -> datetime:
+        for date_time_format in date_time_formats:
+            try:
+                return datetime.strptime(x, date_time_format)
+            except ValueError:
+                pass
+
+        raise ValueError(
+            f"time data '{x}' does not match any format in " "{date_time_formats}"
+        )
 
     parser = (
-        (lambda x: datetime.strptime(x, date_format))
-        if date_format is not None
+        (lambda x: date_time_parser(x, date_time_formats))
+        if date_time_formats is not None
         else float
     )
 

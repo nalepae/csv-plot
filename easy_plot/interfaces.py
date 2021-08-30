@@ -52,7 +52,7 @@ class Configuration(BaseModel):
         variable: str
         label: Optional[str]
         unit: Optional[str]
-        date_time_format: Optional[str] = Field(..., alias="dateTimeFormat")
+        date_time_formats: Optional[List[str]] = Field(..., alias="dateTimeFormats")
 
     class LayoutItem(BaseModel):
         position: constr(regex=r"^[0-9]+-[0-9]+$")  # type: ignore
