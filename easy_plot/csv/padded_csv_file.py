@@ -62,7 +62,7 @@ class _PaddedCSVFile:
         self,
         file_descriptor: IO,
         file_size: int,
-        column_and_type: List[Tuple[str, type]],
+        columns_and_types: List[Tuple[str, type]],
         unwrap_if_one_column=False,
     ) -> None:
         """Constructor.
@@ -70,9 +70,9 @@ class _PaddedCSVFile:
         file_descriptor: The file descriptor pointing to the padded CSV file
         file_size      : The file size (in bytes) of the padded CSV file pointed by
                          `file_descriptor`
-        column_and_type: A list of tuples where each tuple has:
-                         - The name of the column
-                         - The type of the column
+        columns_and_types: A list of tuples where each tuple has:
+                           - The name of the column
+                           - The type of the column
         unwrap_if_one_column: Unwrap if only one column unwrap result.
                               Exemple: Instead of returning [[4], [5], [2]] return
                                        [4, 5, 2]
@@ -84,10 +84,10 @@ class _PaddedCSVFile:
         header_line = cast(str, padded_text_file[0])
         headers = header_line.split(",")
 
-        if column_and_type == []:
+        if columns_and_types == []:
             raise ValueError("`column_and_type` is an empty list")
 
-        columns, _ = zip(*column_and_type)
+        columns, _ = zip(*columns_and_types)
 
         if not set(columns) <= set(headers):
             raise ColumnNotFoundError(
@@ -98,11 +98,11 @@ class _PaddedCSVFile:
         header_to_index = {header: index for index, header in enumerate(headers)}
 
         self.__column_indexes_type = [
-            (header_to_index[column], type) for column, type in column_and_type
+            (header_to_index[column], type) for column, type in columns_and_types
         ]
 
         self.__padded_text_file = _PaddedTextFile(file_descriptor, file_size, offset=1)
-        _, *others = column_and_type
+        _, *others = columns_and_types
         self.__has_to_unwrap = unwrap_if_one_column and others == []
 
     def __len__(self):
@@ -172,7 +172,7 @@ class _PaddedCSVFile:
 
 @contextmanager
 def padded_csv_file(
-    path: Path, column_and_type: List[Tuple[str, type]]
+    path: Path, columns_and_types: List[Tuple[str, type]]
 ) -> Iterator[_PaddedCSVFile]:
     """Represent a padded CSV file, where lines are reachable with O(1) complexity.
 
@@ -183,7 +183,7 @@ def padded_csv_file(
     Only line(s) you request will be load in memory.
 
     Usage:
-    with padded_csv_file(<file_path>, <column_and_type>) as pcf:
+    with padded_csv_file(<file_path>, <columns_and_types>) as pcf:
         ...
 
     Example: With the following file represented by <file_descriptor>:
@@ -217,6 +217,8 @@ def padded_csv_file(
     """
     try:
         with path.open() as file_descriptor:
-            yield _PaddedCSVFile(file_descriptor, path.stat().st_size, column_and_type)
+            yield _PaddedCSVFile(
+                file_descriptor, path.stat().st_size, columns_and_types
+            )
     finally:
         pass
