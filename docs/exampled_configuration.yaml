@@ -1,0 +1,27 @@
+general:
+  variable: index
+  label: Time # Optional
+  unit: sec # Optional
+
+layout:
+  - position: 1-1
+    title: Waves # Optional
+    label: Height # Optional
+    unit: m # Optional
+  - position: 2-1
+    title: Waves with some randomness # Optional
+    label: Height # Optional
+    unit: m # Optional
+
+curves:
+  - position: 1-1
+    variable: a
+  - position: 1-1
+    variable: b
+    color: green # Optional - Default to yellow
+  - position: 2-1
+    variable: c
+    color: purple # Optional - Default to yellow
+  - position: 2-1
+    variable: d
+    color: aqua # Optional - Default to yellow
