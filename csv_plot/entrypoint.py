@@ -358,7 +358,7 @@ def main(
         x_range, _ = first_plot.viewRange()
         x_min, x_max = x_range
 
-        connector.send((x_min, x_max, 1000))
+        connector.send((x_min, x_max, int(first_plot.width())))
 
     def update():
         while True:
@@ -380,7 +380,8 @@ def main(
     first_plot.sigXRangeChanged.connect(on_sig_x_range_changed)
 
     background_processor.start()
-    connector.send((None, None, 1000))
+
+    connector.send((None, None, int(first_plot.width())))
 
     app = mkQApp()
     app.setWindowIcon(QIcon(str(ICON_PATH)))
