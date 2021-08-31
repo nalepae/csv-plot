@@ -6,7 +6,7 @@ from pathlib import Path
 from threading import Thread
 from typing import Dict, Iterator, List, Optional, Tuple
 
-import yaml
+import yaml  # type: ignore
 from click import Choice
 from click.utils import echo
 from pydantic import ValidationError
