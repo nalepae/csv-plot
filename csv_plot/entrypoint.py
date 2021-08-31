@@ -11,22 +11,21 @@ from click import Choice
 from click.utils import echo
 from pydantic import ValidationError
 from pyqtgraph import (
+    DateAxisItem,
     FillBetweenItem,
     GraphicsLayoutWidget,
     PlotCurveItem,
     PlotItem,
     mkQApp,
     setConfigOptions,
-    DateAxisItem,
 )
 from pyqtgraph.graphicsItems.PlotCurveItem import PlotCurveItem
 from PySide6.QtGui import QIcon
 from typer import Argument, Exit, Option, Typer, colors, get_app_dir, prompt, secho
 
-from easy_plot.csv.selector import Selected
-
 from .background_processor import BackgroundProcessor
 from .csv import pad_and_sample, pseudo_hash
+from .csv.selector import Selected
 from .interfaces import COLOR_NAME_TO_HEXA, Configuration
 
 setConfigOptions(background="#141830", foreground="#D1D4DC", antialias=True)
