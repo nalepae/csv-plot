@@ -281,13 +281,14 @@ def main(
             win.addPlot(
                 row=layout_item.x - 1,
                 col=layout_item.y - 1,
+                title=layout_item.title,
                 axisItems={"bottom": DateAxisItem()},
             )
             if chosen_configuration.general.date_time_formats is not None
             else win.addPlot(
                 row=layout_item.x - 1,
                 col=layout_item.y - 1,
-                axisItems={"bottom": DateAxisItem()},
+                title=layout_item.title,
             )
         )
         plot.showGrid(x=True, y=True)
@@ -377,17 +378,13 @@ def main(
     update_thread = Thread(target=update)
     update_thread.start()
 
-    first_plot.sigXRangeChanged.connect(on_sig_x_range_changed)
-
-    background_processor.start()
-
-    connector.send((None, None, int(first_plot.width())))
-
-    app = mkQApp()
-    app.setWindowIcon(QIcon(str(ICON_PATH)))
-    app.exec()
-
     try:
-        pass
+        first_plot.sigXRangeChanged.connect(on_sig_x_range_changed)
+        background_processor.start()
+        connector.send((None, None, int(first_plot.width())))
+
+        app = mkQApp()
+        app.setWindowIcon(QIcon(str(ICON_PATH)))
+        app.exec()
     finally:
         connector.send(None)

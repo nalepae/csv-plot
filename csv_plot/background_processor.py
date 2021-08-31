@@ -79,6 +79,8 @@ class BackgroundProcessor(Process):
             self.__x_and_type,
             [(y, float) for y in self.__ys],
         ) as sel:
+            _, x_type = self.__x_and_type
+
             while True:
                 item: Optional[
                     Tuple[Optional[float], Optional[float], int]
@@ -113,8 +115,14 @@ class BackgroundProcessor(Process):
                     start_float = visible_start_float - visible_range_with_margin
                     stop_float = visible_stop_float + visible_range_with_margin
 
-                    start = datetime.fromtimestamp(start_float)
-                    stop = datetime.fromtimestamp(stop_float)
+                    start, stop = (
+                        (
+                            datetime.fromtimestamp(stop_float),
+                            datetime.fromtimestamp(start_float),
+                        )
+                        if x_type == datetime
+                        else (start_float, stop_float)
+                    )
 
                     selected = sel[start:stop:resolution]  # type: ignore
                 else:

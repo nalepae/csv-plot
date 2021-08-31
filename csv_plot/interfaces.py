@@ -48,11 +48,10 @@ COLOR_NAME_TO_HEXA = {
 
 class Configuration(BaseModel):
     class General(BaseModel):
-        title: str
         variable: str
         label: Optional[str]
         unit: Optional[str]
-        date_time_formats: Optional[List[str]] = Field(..., alias="dateTimeFormats")
+        date_time_formats: Optional[List[str]] = Field(None, alias="dateTimeFormats")
 
     class LayoutItem(BaseModel):
         position: constr(regex=r"^[0-9]+-[0-9]+$")  # type: ignore
@@ -77,7 +76,6 @@ class Configuration(BaseModel):
     class Curve(BaseModel):
         position: constr(regex=r"^[0-9]+-[0-9]+$")  # type: ignore
         variable: str
-        label: Optional[str]
         color: Color = Color.Yellow
 
         # Computed
