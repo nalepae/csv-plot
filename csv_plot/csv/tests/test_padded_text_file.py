@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import IO
 
 import pytest
-from easy_plot.csv.tests import assets
+from ..tests import assets
 from pytest import fixture
 
 from ..padded_text_file import (

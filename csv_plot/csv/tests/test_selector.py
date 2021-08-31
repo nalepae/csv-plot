@@ -12,8 +12,8 @@ def hashed_dir() -> Path:
 
 
 def test_selector(hashed_dir):
-    with selector(hashed_dir, ("a", int), [("b", float), ("d", float)], 100) as sel:
-        assert sel[:] == Selected(
+    with selector(hashed_dir, ("a", int), [("b", float), ("d", float)]) as sel:
+        assert sel[::100] == Selected(
             xs=[1, 5, 9, 13, 17],
             name_to_y={
                 "b": Selected.Y(mins=[2, 6, 10, 14, 18], maxs=[2, 6, 10, 14, 18]),
@@ -22,8 +22,8 @@ def test_selector(hashed_dir):
         )
 
         assert (
-            sel[5:13]
-            == sel[4.5:13.5]
+            sel[5:13:100]
+            == sel[4.5:13.5:100]
             == Selected(
                 xs=[5, 9, 13],
                 name_to_y={
@@ -33,9 +33,7 @@ def test_selector(hashed_dir):
             )
         )
 
-        sel.resolution = 4
-
-        assert sel[:] == Selected(
+        assert sel[::4] == Selected(
             xs=[1, 5, 9, 13, 17],
             name_to_y={
                 "b": Selected.Y(mins=[2, 6, 10, 14, 18], maxs=[2, 6, 10, 14, 18]),
@@ -44,8 +42,8 @@ def test_selector(hashed_dir):
         )
 
         assert (
-            sel[5:13]
-            == sel[4.5:13.5]
+            sel[5:13:4]
+            == sel[4.5:13.5:4]
             == Selected(
                 xs=[5, 9, 13],
                 name_to_y={
@@ -55,9 +53,7 @@ def test_selector(hashed_dir):
             )
         )
 
-        sel.resolution = 3
-
-        assert sel[:] == Selected(
+        assert sel[::3] == Selected(
             xs=[1, 9, 17],
             name_to_y={
                 "b": Selected.Y(mins=[2, 10, 18], maxs=[6, 14, 18]),
@@ -65,11 +61,9 @@ def test_selector(hashed_dir):
             },
         )
 
-        sel.resolution = 2
-
         assert (
-            sel[1:9]
-            == sel[0.5:9.5]
+            sel[1:9:2]
+            == sel[0.5:9.5:2]
             == Selected(
                 xs=[1, 9],
                 name_to_y={

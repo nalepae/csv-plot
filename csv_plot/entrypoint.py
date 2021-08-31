@@ -351,7 +351,6 @@ def main(
         FILES_DIR / pseudo_hash(csv_path, x),
         (x, parser),  # type: ignore
         list(chosen_configuration.variables),
-        1000,
         background_connector,
     )
 
@@ -359,7 +358,7 @@ def main(
         x_range, _ = first_plot.viewRange()
         x_min, x_max = x_range
 
-        connector.send((x_min, x_max))
+        connector.send((x_min, x_max, 1000))
 
     def update():
         while True:
@@ -381,7 +380,7 @@ def main(
     first_plot.sigXRangeChanged.connect(on_sig_x_range_changed)
 
     background_processor.start()
-    connector.send((None, None))
+    connector.send((None, None, 1000))
 
     app = mkQApp()
     app.setWindowIcon(QIcon(str(ICON_PATH)))

@@ -26,12 +26,12 @@ class BackgroundProcessor(Process):
     connection, background_connection = Pipe()
 
     background_processor = BackgroundProcessor(
-        dir_path, ("a", int), ["b", "d"], 100, background_connection
+        dir_path, ("a", int), ["b", "d"], background_connection
     )
 
     background_processor.start()
 
-    connection.send((None, None))
+    connection.send((None, None, 100))
     connection.recv() == (
         [1, 5, 9, 13, 17],
         {
@@ -40,7 +40,7 @@ class BackgroundProcessor(Process):
         }
     )
 
-    connection.send(4.5, 13.5) == (
+    connection.send(4.5, 13.5, 100) == (
         [5, 9, 13],
         {
             "b": Selected.Y(mins=[6, 10, 14], maxs=[6, 10, 14]),
@@ -56,7 +56,6 @@ class BackgroundProcessor(Process):
         dir_path: Path,
         x_and_type: Tuple[str, type],
         ys: List[str],
-        resolution: int,
         connection: Connection,
     ) -> None:
         """Initializer
@@ -66,14 +65,12 @@ class BackgroundProcessor(Process):
 
         x_and_type: Name and the type of X value
         ys        : Name of Ys types
-        resolution: Resolution to be as close as possible
         connection: One side of the pipe
         """
         super().__init__()
         self.__dir_path = dir_path
         self.__x_and_type = x_and_type
         self.__ys = ys
-        self.__resolution = resolution
         self.__connection = connection
 
     def run(self) -> None:
@@ -81,14 +78,10 @@ class BackgroundProcessor(Process):
             self.__dir_path,
             self.__x_and_type,
             [(y, float) for y in self.__ys],
-            self.__resolution,
         ) as sel:
             while True:
                 item: Optional[
-                    Tuple[
-                        Optional[float],
-                        Optional[float],
-                    ]
+                    Tuple[Optional[float], Optional[float], int]
                 ] = self.__connection.recv()
 
                 if item is None:
@@ -102,7 +95,7 @@ class BackgroundProcessor(Process):
                         self.__connection.send(None)
                         return
 
-                visible_start_float, visible_stop_float = item
+                visible_start_float, visible_stop_float, resolution = item
 
                 assert not (visible_start_float is None) != (
                     visible_stop_float is None
@@ -112,7 +105,7 @@ class BackgroundProcessor(Process):
                 )
 
                 if visible_start_float is None and visible_stop_float is None:
-                    selected = sel[:]
+                    selected = sel[::resolution]
                 elif visible_start_float is not None and visible_stop_float is not None:
                     visible_range = visible_stop_float - visible_start_float
                     visible_range_with_margin = MARGIN * visible_range
@@ -123,7 +116,7 @@ class BackgroundProcessor(Process):
                     start = datetime.fromtimestamp(start_float)
                     stop = datetime.fromtimestamp(stop_float)
 
-                    selected = sel[start:stop]  # type: ignore
+                    selected = sel[start:stop:resolution]  # type: ignore
                 else:
                     raise ValueError(
                         "`visible_start_float` and `visible_stop_float` must be both "

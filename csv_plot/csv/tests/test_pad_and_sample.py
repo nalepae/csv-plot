@@ -11,7 +11,7 @@ from ..pad_and_sample import (
     sample,
     sample_sampled,
 )
-from easy_plot.csv.tests import assets
+from ..tests import assets
 from pytest import fixture
 
 
