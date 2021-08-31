@@ -34,7 +34,7 @@ ICON_PATH = Path(__file__).parent / "assets" / "icon-256.png"
 
 app = Typer()
 
-APP_DIR = Path(get_app_dir("easy-plot"))
+APP_DIR = Path(get_app_dir("csv-plot"))
 FILES_DIR = APP_DIR / "files"
 FILES_DIR.mkdir(parents=True, exist_ok=True)
 CONFIG_PATH = APP_DIR / "config.json"
@@ -98,14 +98,14 @@ def get_default_configuration_files() -> Iterator[Path]:
         )
 
         secho(
-            "You can either give a configuration file or directory with `-c` or "
+            "You can either use a configuration file or directory with `-c` or "
             "`--configuration-file-or-directory` option, or define default "
             "configuration directory with:",
             bold=True,
         )
 
         secho(
-            "$ easy-plot --set-default-configuration-directory",
+            "$ csv-plot --set-default-configuration-directory",
             bold=True,
             fg=colors.CYAN,
         )
@@ -122,7 +122,7 @@ def get_default_configuration_files() -> Iterator[Path]:
 def main(
     csv_path: Path = Argument(
         ...,
-        help="📜 CSV file to plot 📜",
+        help="CSV file to plot. This file must contain a header.",
         exists=True,
         file_okay=True,
         dir_okay=False,
@@ -131,8 +131,15 @@ def main(
     configuration_files_dirs: Optional[List[Path]] = Option(
         None,
         "-c",
-        "--configuration-file-or-directory",
-        help="📐 Configuration file or directory 📐",
+        "--configuration-files-or-directories",
+        help=(
+            "A list of configuration files or directories containing configuration "
+            "files. You can specify only one configuration file, or one directory, or "
+            "mix of files and directories... If a directory is specified, CSV Plot "
+            "explores recursively all subdirectories to find configuration files. If "
+            "several configuration files match the CSV file, then CSV Plot ask you "
+            "which one you want to use."
+        ),
         exists=True,
         file_okay=True,
         dir_okay=True,
@@ -141,7 +148,13 @@ def main(
     ),
     set_default_configuration_directory: Optional[Path] = Option(
         None,
-        help="📐 Set default configuration directory 📐",
+        help=(
+            "Set a default directory where CSV Plot will recursively look for "
+            "configuration files. Once done, no need to specify configuration file any "
+            "more. If a configuration file is specified at launch while a default "
+            "directory is specified, then the configuration file will supersede the "
+            "default directory."
+        ),
         file_okay=False,
         dir_okay=True,
         resolve_path=True,
@@ -149,7 +162,17 @@ def main(
         callback=default_configuration_directory_callback,
     ),
 ):
-    """🌊 Easy Plot - Plot CSV files without headaches! 🏄"""
+    """🌊 CSV Plot - Plot CSV files without headaches! 🏄
+
+    CSV Plot is a tool to efficiently plot your CSV files.
+    You define a YAML configuration file which specify how your CSV file should be
+    plotted (layout, colors, legend, units, etc...) and CSV Plot handles the heavy work
+    for you.
+
+    CSV Plot does respect your computer memory. This means CSV Plot only loads into
+    memory the portion of file which has to be plotted. CSV Plot is able to plot files
+    which are bigger than your memory, and has been tested with file larger than 100GB.
+    """
 
     # Get CSV file columns names corresponding to floats
     def is_castable_to_float(value: str) -> bool:
@@ -242,14 +265,8 @@ def main(
     ys = columns - {x}
 
     secho("Process CSV file... ", fg=colors.BRIGHT_GREEN, bold=True, nl=False)
-
     pad_and_sample(csv_path, FILES_DIR, x, [(y, float) for y in ys])
-
-    secho(
-        "OK",
-        fg=colors.BRIGHT_GREEN,
-        bold=True,
-    )
+    secho("OK", fg=colors.BRIGHT_GREEN, bold=True)
 
     win = GraphicsLayoutWidget(show=True, title=f"🌊 EASY PLOT 🏄")
     win.showMaximized()
