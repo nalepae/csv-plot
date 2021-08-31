@@ -268,7 +268,7 @@ def main(
     pad_and_sample(csv_path, FILES_DIR, x, [(y, float) for y in ys])
     secho("OK", fg=colors.BRIGHT_GREEN, bold=True)
 
-    win = GraphicsLayoutWidget(show=True, title=f"🌊 EASY PLOT 🏄")
+    win = GraphicsLayoutWidget(show=True, title=f"🌊 CSV PLOT 🏄")
     win.showMaximized()
 
     first_plot: Optional[PlotItem] = None
