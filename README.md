@@ -28,7 +28,7 @@ $ csv-plot <path to CSV file> -c <path to configuration file>
   - Use mouse scroll wheel, or
   - Hold mouse right button
 
-With [this CSV file](https://github.com/nalepae/csv-plot/blob/master/docs/example_file.csv):
+With this [CSV file](https://github.com/nalepae/csv-plot/blob/master/docs/example_file.csv):
 ```
 index,sin,cos,sin_rand,cos_rand
 0,0,1,-0.07456652762,1.039341379
@@ -43,36 +43,39 @@ index,sin,cos,sin_rand,cos_rand
 9,0.544826795,0.8533279255,0.5498124736,0.8812543224
 ...
 ```
-and this [configuration file](https://github.com/nalepae/csv-plot/blob/master/docs/example_file.csv):
+and this [configuration file](https://github.com/nalepae/csv-plot/blob/master/docs/example_configuration.yaml):
 ```YAML
 general:
-  variable: index
-  label: Time # Optional
-  unit: sec # Optional
+  variable: index # Mandatory - The column in CSV file corresponding to X axis
+  label: Time # Optional      - Label of horizontal axis
+  unit: sec # Optional        - Unit of horizontal axis
 
 layout:
-  - position: 1-1
-    title: Waves # Optional
-    label: Height # Optional
-    unit: m # Optional
+  - position: 1-1 # Mandatory - `Raw number`-`Column number` of the plot widget
+    title: Waves # Optional   - Title of the (1-1) plot widget
+    label: Height # Optional  - Label of vertical axis for the (1-1) plot widget
+    unit: m # Optional        - Unit of vertical axis for the (1-1) plot widget
+
   - position: 2-1
-    title: Waves with some randomness # Optional
-    label: Height # Optional
-    unit: m # Optional
+    title: Waves with some randomness
+    label: Height
+    unit: m
 
 curves:
-  - position: 1-1
-    variable: sin
+  - position: 1-1 # Mandatory - `Raw number`-`Column number`
+    variable: sin # Mandatory - The column in CSV file corresponding to Y axis
+
   - position: 1-1
     variable: cos
-    color: green # Optional - Default to yellow
+    color: green # Optional - Curve color - Default to yellow
+
   - position: 2-1
     variable: sin_rand
-    color: purple # Optional - Default to yellow
+    color: purple
+
   - position: 2-1
     variable: cos_rand
-    color: aqua # Optional - Default to yellow
-
+    color: aqua
 ```
 
 We get this result:
