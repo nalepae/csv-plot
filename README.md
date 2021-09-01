@@ -26,7 +26,7 @@ $ csv-plot <path to CSV file> -c <path to configuration file>
 - To move: Hold mouse left button
 - To zoom:
   - Use mouse scroll wheel, or
-  - Hold mous right button
+  - Hold mouse right button
 
 With [this CSV file](https://github.com/nalepae/csv-plot/blob/master/docs/example_file.csv):
 ```
@@ -74,3 +74,8 @@ curves:
     color: aqua # Optional - Default to yellow
 
 ```
+
+We get this result:
+<div align="center">
+  <img src="https://github.com/nalepae/csv-plot/blob/master/docs/example.png"><br>
+</div>
