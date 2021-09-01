@@ -11,7 +11,7 @@
 
 It works with user friendly YAML configuration files, to let you choose the layout, colors, units, legends...
 
-**CSV Plot** is built on the amazing [PyQtGraph](https://www.pyqtgraph.org/) library, which ensures a nice and smooth experience, as plotting should always be.
+**CSV Plot** is built on top of the amazing [PyQtGraph](https://www.pyqtgraph.org/) library, which ensures a nice and smooth experience, as plotting should always be.
 
 ## Installation
 ```
