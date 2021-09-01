@@ -1,27 +1,31 @@
 general:
-  variable: index
-  label: Time # Optional
-  unit: sec # Optional
+  variable: index # Mandatory - The column in CSV file corresponding to X axis
+  label: Time # Optional      - Label of horizontal axis
+  unit: sec # Optional        - Unit of horizontal axis
 
 layout:
-  - position: 1-1
-    title: Waves # Optional
-    label: Height # Optional
-    unit: m # Optional
+  - position: 1-1 # Mandatory - `Raw number`-`Column number` of the plot widget.
+    title: Waves # Optional   - Title of the (1-1) plot widget
+    label: Height # Optional  - Label of vertical axis for the (1-1) plot widget
+    unit: m # Optional        - Unit of vertical axis for the (1-1) plot widget
+
   - position: 2-1
-    title: Waves with some randomness # Optional
-    label: Height # Optional
-    unit: m # Optional
+    title: Waves with some randomness
+    label: Height
+    unit: m
 
 curves:
-  - position: 1-1
-    variable: sin
+  - position: 1-1 # Mandatory - `Raw number`-`Column number`
+    variable: sin # Mandatory - The column in CSV file corresponding to Y axis
+
   - position: 1-1
     variable: cos
-    color: green # Optional - Default to yellow
+    color: green # Optional - Curve color - Default to yellow
+
   - position: 2-1
     variable: sin_rand
-    color: purple # Optional - Default to yellow
+    color: purple
+
   - position: 2-1
     variable: cos_rand
-    color: aqua # Optional - Default to yellow
+    color: aqua
