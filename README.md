@@ -3,7 +3,7 @@
 </div>
 
 ----------------
-# CSV Plot: powerful plotting tool for CSV files
+# CSV Plot: easy and powerful plotting tool for CSV files
 
 ## What is it?
 **CSV Plot** is a tool to simply plot any CSV file, of any size, without never getting out of memory errors.
