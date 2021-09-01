@@ -4,7 +4,7 @@ general:
   unit: sec # Optional        - Unit of horizontal axis
 
 layout:
-  - position: 1-1 # Mandatory - `Raw number`-`Column number` of the plot widget.
+  - position: 1-1 # Mandatory - `Raw number`-`Column number` of the plot widget
     title: Waves # Optional   - Title of the (1-1) plot widget
     label: Height # Optional  - Label of vertical axis for the (1-1) plot widget
     unit: m # Optional        - Unit of vertical axis for the (1-1) plot widget
