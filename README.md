@@ -82,3 +82,46 @@ We get this result:
 <div align="center">
   <img src="https://github.com/nalepae/csv-plot/blob/master/docs/example.png"><br>
 </div>
+
+## Special notice
+The column corresponding to the X axis MUST be sorted. In the contrary, the behavior is unpredictable.
+
+## DateTime as X axis
+If your CSV time presents a dateTime as X axis, like in the following example with the `time` column:
+```
+time,trade_id,price,side,size
+2019-08-15 16:03:06.595+00,1,0.7597,sell,500.0
+2019-08-15 16:03:06.595+00,2,0.7599,sell,1000.0
+2019-08-15 16:03:06.595+00,3,0.76,sell,1000.0
+2019-08-15 16:03:06.595+00,4,0.7601,sell,1000.0
+2019-08-15 16:03:06.595+00,5,0.7602,sell,1000.0
+2019-08-15 16:03:18.894+00,6,0.7597,sell,500.0
+2019-08-15 16:03:18.894+00,7,0.7599,sell,1000.0
+2019-08-15 16:03:21.279+00,8,0.76,buy,385.0
+2019-08-15 16:03:21.554+00,9,0.76,buy,500.0
+2019-08-15 16:03:23+00,10,0.76,buy,500.0
+2019-08-15 16:03:23.75+00,11,0.76,buy,476.0
+2019-08-15 16:03:23.91+00,12,0.76,buy,1000.0
+2019-08-15 16:03:23.913+00,13,0.76,buy,1000.0
+```
+then a `dateTimeFormat` has to be added into the `general` section, like:
+```YAML
+general:
+  variable: time
+  dateTimeFormat:
+  - "%Y-%m-%d %H:%M:%S.%f+00"
+```
+
+The string `"%Y-%m-%d %H:%M:%S.%f+00"` correspond to the [strptime](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior) format argument.
+If, in the same CSV file, multiple dateTime formats are provided, you can specify all of them in the `dateTimeFormat` list, like:
+```YAML
+general:
+  variable: time
+  dateTimeFormat:
+  - "%Y-%m-%d %H:%M:%S.%f+00"
+  - "%Y-%m-%d %H:%M:%S+00"
+```
+
+Keep in mind that for each line of the CSV file, **CSV Plot** will evaluate the dateTime string against each of `dateTimeFormat` value,
+and will stop to the first one which is successful. So write first the format which is the most likely to happen in the CSV file.
+
