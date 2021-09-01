@@ -80,7 +80,10 @@ def get_configuration_files(configuration_files_dirs: List[Path]) -> List[Path]:
     directories = [item for item in configuration_files_dirs if item.is_dir()]
 
     extra_files = [
-        extra_file for directory in directories for extra_file in directory.iterdir()
+        extra_file
+        for directory in directories
+        for extra_file in directory.iterdir()
+        if extra_file.suffix == ".yaml"
     ]
 
     return base_files + extra_files
@@ -196,35 +199,37 @@ def main(
     )
 
     # Get configurations which could correspond to the CSV file
-    configuration_dicts_maybe_none = (
-        yaml.load(configuration_file.open("r"), Loader=yaml.FullLoader)
+    configuration_file_to_configuration_dict_maybe_none = {
+        configuration_file: yaml.load(
+            configuration_file.open("r"), Loader=yaml.FullLoader
+        )
         for configuration_file in configuration_files
-    )
+    }
 
     # If a YAML file is empty, then it will be parsed as `None`. It has to be filtered
-    configuration_dicts = (
-        configuration_dict
-        for configuration_dict in configuration_dicts_maybe_none
+    configuration_file_to_dict = {
+        configuration_file: configuration_dict
+        for configuration_file, configuration_dict in configuration_file_to_configuration_dict_maybe_none.items()
         if configuration_dict is not None
-    )
+    }
 
     try:
-        configurations = [
-            Configuration(**configuration_dict)
-            for configuration_dict in configuration_dicts
-        ]
+        configuration_file_to_configuration = {
+            configuration_file: Configuration(**configuration_dict)
+            for configuration_file, configuration_dict in configuration_file_to_dict.items()
+        }
     except ValidationError as e:
         secho("ERROR:", fg=colors.BRIGHT_RED, bold=True)
         secho(str(e), fg=colors.BRIGHT_RED)
         raise Exit()
 
-    matching_configurations = [
-        configuration
-        for configuration in configurations
+    matching_file_to_configuration = {
+        configuration_file: configuration
+        for configuration_file, configuration in configuration_file_to_configuration.items()
         if configuration.variables <= columns
-    ]
+    }
 
-    if len(matching_configurations) == 0:
+    if len(matching_file_to_configuration) == 0:
         secho(
             "❌ ERROR: ",
             fg=colors.BRIGHT_RED,
@@ -238,28 +243,31 @@ def main(
         )
 
         raise Exit()
-    elif len(matching_configurations) == 1:
-        chosen_configuration, *_ = matching_configurations
+    elif len(matching_file_to_configuration) == 1:
+        chosen_configuration, *_ = matching_file_to_configuration.values()
     else:
+        matching_files_configurations = list(matching_file_to_configuration.items())
+        matching_files, configurations = zip(*matching_files_configurations)
+
         secho(
-            "Multiple configuration files are corresponding",
+            "Multiple configuration files correspond:",
             fg=colors.BRIGHT_GREEN,
             bold=True,
         )
 
-        for index, chosen_configuration in enumerate(matching_configurations):
+        for index, matching_file in enumerate(matching_files):
             secho(
-                f"{index} - {chosen_configuration.general.title}",
+                f"{index} - {matching_file}",
                 fg=colors.BRIGHT_YELLOW,
             )
 
         choice = prompt(
-            "Choose the one you want to use",
-            type=Choice([str(item) for item in range(len(matching_configurations))]),
+            "Choose which one you want to use",
+            type=Choice([str(item) for item in range(len(matching_files))]),
             show_choices=False,
         )
 
-        chosen_configuration = matching_configurations[int(choice)]
+        chosen_configuration = configurations[int(choice)]
 
     x = chosen_configuration.general.variable
     ys = columns - {x}
