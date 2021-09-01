@@ -15,13 +15,13 @@ layout:
 
 curves:
   - position: 1-1
-    variable: a
+    variable: sin
   - position: 1-1
-    variable: b
+    variable: cos
     color: green # Optional - Default to yellow
   - position: 2-1
-    variable: c
+    variable: sin_rand
     color: purple # Optional - Default to yellow
   - position: 2-1
-    variable: d
+    variable: cos_rand
     color: aqua # Optional - Default to yellow
