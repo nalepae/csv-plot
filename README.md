@@ -4,6 +4,10 @@
 
 ----------------
 # CSV Plot: easy and powerful plotting tool for CSV files
+[![PyPI Latest Release](https://img.shields.io/pypi/v/csv-plot.svg)](https://pypi.org/project/csv-plot/)
+[![License](https://img.shields.io/pypi/l/pandas.svg)](https://github.com/pandas-dev/pandas/blob/master/LICENSE)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 
 ## What is it?
 **CSV Plot** is a tool to easily plot any CSV file, of any size, without never getting out of memory errors.
