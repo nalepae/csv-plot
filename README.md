@@ -109,7 +109,7 @@ then a `dateTimeFormat` has to be added into the `general` section, like:
 general:
   variable: time
   dateTimeFormat:
-  - "%Y-%m-%d %H:%M:%S.%f+00"
+    - "%Y-%m-%d %H:%M:%S.%f+00"
 ```
 
 The string `"%Y-%m-%d %H:%M:%S.%f+00"` correspond to the [strptime](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior) format argument.
@@ -118,8 +118,8 @@ If, in the same CSV file, multiple dateTime formats are provided, you can specif
 general:
   variable: time
   dateTimeFormat:
-  - "%Y-%m-%d %H:%M:%S.%f+00"
-  - "%Y-%m-%d %H:%M:%S+00"
+    - "%Y-%m-%d %H:%M:%S.%f+00"
+    - "%Y-%m-%d %H:%M:%S+00"
 ```
 
 Keep in mind that for each line of the CSV file, **CSV Plot** will evaluate the dateTime string against each of `dateTimeFormat` value,
