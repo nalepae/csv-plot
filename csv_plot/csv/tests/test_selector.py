@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from pytest import fixture
 import pytest
+from pytest import fixture
 
 from ..selector import Selected, selector
 from . import assets

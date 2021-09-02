@@ -4,15 +4,10 @@ from pathlib import Path
 from shutil import copy2
 
 import pytest
-from ..pad_and_sample import (
-    pad,
-    pad_and_sample,
-    pseudo_hash,
-    sample,
-    sample_sampled,
-)
-from ..tests import assets
 from pytest import fixture
+
+from ..pad_and_sample import pad, pad_and_sample, pseudo_hash, sample, sample_sampled
+from ..tests import assets
 
 
 @fixture

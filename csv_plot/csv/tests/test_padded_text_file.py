@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import IO
 
 import pytest
-from ..tests import assets
 from pytest import fixture
 
 from ..padded_text_file import (
@@ -11,6 +10,7 @@ from ..padded_text_file import (
     _PaddedTextFile,
     padded_text_file,
 )
+from ..tests import assets
 
 
 @fixture
