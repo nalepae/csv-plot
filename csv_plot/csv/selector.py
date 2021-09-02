@@ -176,7 +176,7 @@ class _Selector:
         start, stop, step = x_or_slice.start, x_or_slice.stop, x_or_slice.step
 
         if step is None:
-            raise ValueError("Step of slice hat to be defined")
+            raise ValueError("Step of slice has to be defined")
 
         spcf = self.__get_max_resolution_lines_between(start, stop, step)
         xs, y_in_rows = zip(*spcf[start:stop])
