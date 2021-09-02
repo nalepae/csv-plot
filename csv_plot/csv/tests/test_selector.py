@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from pytest import fixture
+import pytest
 
 from ..selector import Selected, selector
 from . import assets
@@ -13,6 +14,9 @@ def hashed_dir() -> Path:
 
 def test_selector(hashed_dir):
     with selector(hashed_dir, ("a", int), [("b", float), ("d", float)]) as sel:
+        with pytest.raises(ValueError):
+            sel[::]
+
         assert sel[::100] == Selected(
             xs=[1, 5, 9, 13, 17],
             name_to_y={
