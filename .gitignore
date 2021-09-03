@@ -5,3 +5,4 @@ __pycache__
 .coverage
 .python-version
 *egg-info
+*.so
