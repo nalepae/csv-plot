@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Iterator, List, Optional, Tuple, Union, cast
 
-from .padded_text_file import _PaddedTextFile
+from .padded_text_file import PaddedTextFile
 
 
 class ColumnNotFoundError(Exception):
@@ -80,7 +80,7 @@ class _PaddedCSVFile:
         If at least one line of the file pointed by `file_descriptor` has not the same
         length than others, a `TextFileNotPaddedError` is raised.
         """
-        padded_text_file = _PaddedTextFile(file_descriptor, file_size, offset=0)
+        padded_text_file = PaddedTextFile(file_descriptor, file_size, offset=0)
         header_line = cast(str, padded_text_file[0])
         headers = header_line.split(",")
 
@@ -101,7 +101,7 @@ class _PaddedCSVFile:
             (header_to_index[column], type) for column, type in columns_and_types
         ]
 
-        self.__padded_text_file = _PaddedTextFile(file_descriptor, file_size, offset=1)
+        self.__padded_text_file = PaddedTextFile(file_descriptor, file_size, offset=1)
         _, *others = columns_and_types
         self.__has_to_unwrap = unwrap_if_one_column and others == []
 

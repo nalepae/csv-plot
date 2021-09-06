@@ -11,7 +11,7 @@ class TextFileNotPaddedError(Exception):
     pass
 
 
-class _PaddedTextFile:
+class PaddedTextFile:
     """Represent a padded text file, where lines are reachable with O(1) complexity.
 
     A padded text file is a text file where all lines have exactly the same length.
@@ -21,7 +21,7 @@ class _PaddedTextFile:
     Only line(s) you request will be loaded in memory.
 
     Usage:
-    padded_text_file = _PaddedTextFile(<file_descriptor>, <file_zise>, <offset>)
+    padded_text_file = PaddedTextFile(<file_descriptor>, <file_zise>, <offset>)
 
     # Get the number of lines
     len(padded_text_file)
@@ -156,7 +156,7 @@ class _PaddedTextFile:
 
 
 @contextmanager
-def padded_text_file(path: Path, offset: int = 0) -> Iterator[_PaddedTextFile]:
+def padded_text_file(path: Path, offset: int = 0) -> Iterator[PaddedTextFile]:
     """Represent a padded text file, where lines are reachable with O(1) complexity.
 
     A padded text file is a text file where all lines have exactly the same length.
@@ -188,6 +188,6 @@ def padded_text_file(path: Path, offset: int = 0) -> Iterator[_PaddedTextFile]:
     """
     try:
         with path.open() as file_descriptor:
-            yield _PaddedTextFile(file_descriptor, path.stat().st_size, offset)
+            yield PaddedTextFile(file_descriptor, path.stat().st_size, offset)
     finally:
         pass

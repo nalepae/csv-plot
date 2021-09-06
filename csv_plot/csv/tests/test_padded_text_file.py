@@ -7,7 +7,7 @@ from pytest import fixture
 from ..padded_text_file import (
     OffsetError,
     TextFileNotPaddedError,
-    _PaddedTextFile,
+    PaddedTextFile,
     padded_text_file,
 )
 from ..tests import assets
@@ -45,16 +45,16 @@ def padded_file_size(padded_file_path: Path) -> int:
 
 def test_not_padded(not_padded_file_descriptor: IO, not_padded_file_size: int) -> None:
     with pytest.raises(TextFileNotPaddedError):
-        _PaddedTextFile(not_padded_file_descriptor, not_padded_file_size, 0)
+        PaddedTextFile(not_padded_file_descriptor, not_padded_file_size, 0)
 
 
 def test_len(padded_file_descriptor: IO, padded_file_size: int) -> None:
-    padded_text_file = _PaddedTextFile(padded_file_descriptor, padded_file_size, 0)
+    padded_text_file = PaddedTextFile(padded_file_descriptor, padded_file_size, 0)
     assert len(padded_text_file) == 6
 
 
 def test_line(padded_file_descriptor: IO, padded_file_size: int) -> None:
-    padded_text_file = _PaddedTextFile(padded_file_descriptor, padded_file_size, 0)
+    padded_text_file = PaddedTextFile(padded_file_descriptor, padded_file_size, 0)
 
     assert padded_text_file[2] == "5,6,7,8"
     assert padded_text_file[-1] == "17,18,19,20"
@@ -67,7 +67,7 @@ def test_line(padded_file_descriptor: IO, padded_file_size: int) -> None:
 
 
 def test_slice(padded_file_descriptor: IO, padded_file_size: int) -> None:
-    padded_text_file = _PaddedTextFile(padded_file_descriptor, padded_file_size, 0)
+    padded_text_file = PaddedTextFile(padded_file_descriptor, padded_file_size, 0)
 
     assert (
         padded_text_file[:]
@@ -129,12 +129,12 @@ def test_padded_text_file(padded_file_path):
 
 
 def test_len_offset(padded_file_descriptor: IO, padded_file_size: int) -> None:
-    padded_text_file = _PaddedTextFile(padded_file_descriptor, padded_file_size, 1)
+    padded_text_file = PaddedTextFile(padded_file_descriptor, padded_file_size, 1)
     assert len(padded_text_file) == 5
 
 
 def test_line_offset(padded_file_descriptor: IO, padded_file_size: int) -> None:
-    padded_text_file = _PaddedTextFile(padded_file_descriptor, padded_file_size, 1)
+    padded_text_file = PaddedTextFile(padded_file_descriptor, padded_file_size, 1)
 
     assert padded_text_file[2] == "9,10,11,12"
     assert padded_text_file[-1] == "17,18,19,20"
@@ -147,7 +147,7 @@ def test_line_offset(padded_file_descriptor: IO, padded_file_size: int) -> None:
 
 
 def test_slice_offset(padded_file_descriptor: IO, padded_file_size: int) -> None:
-    padded_text_file = _PaddedTextFile(padded_file_descriptor, padded_file_size, 1)
+    padded_text_file = PaddedTextFile(padded_file_descriptor, padded_file_size, 1)
 
     assert (
         padded_text_file[:]
@@ -193,7 +193,7 @@ def test_slice_offset(padded_file_descriptor: IO, padded_file_size: int) -> None
 
 
 def test_offset_max(padded_file_descriptor: IO, padded_file_size: int) -> None:
-    padded_text_file = _PaddedTextFile(padded_file_descriptor, padded_file_size, 6)
+    padded_text_file = PaddedTextFile(padded_file_descriptor, padded_file_size, 6)
     assert len(padded_text_file) == 0
 
     with pytest.raises(IndexError):
@@ -202,7 +202,7 @@ def test_offset_max(padded_file_descriptor: IO, padded_file_size: int) -> None:
 
 def test_offset_out_of_bound(padded_file_descriptor: IO, padded_file_size: int) -> None:
     with pytest.raises(OffsetError):
-        _PaddedTextFile(padded_file_descriptor, padded_file_size, -1)
+        PaddedTextFile(padded_file_descriptor, padded_file_size, -1)
 
     with pytest.raises(OffsetError):
-        _PaddedTextFile(padded_file_descriptor, padded_file_size, 7)
+        PaddedTextFile(padded_file_descriptor, padded_file_size, 7)
