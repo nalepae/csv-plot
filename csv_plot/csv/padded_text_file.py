@@ -42,6 +42,9 @@ class PaddedTextFile:
     #          If possible, use padded_text_file.get(start=a, stop=b) instead of
     #                           padded_text_file[a, b]
     padded_text_file[2:-1]
+
+    # Get the size (number of characters) of one line
+    padded_text_file.line_size
     """
 
     def __init__(self, file_descriptor: IO, file_size: int, offset: int) -> None:
@@ -62,13 +65,13 @@ class PaddedTextFile:
 
         first_line = next(file_descriptor)
 
-        self.__line_size = len(first_line)
-        self.__len = file_size // self.__line_size
+        self.line_size = len(first_line)
+        self.__len = file_size // self.line_size
 
         if not 0 <= offset <= self.__len:
             raise OffsetError(f"Offset must be in [0;{self.__len}]")
 
-        if file_size % self.__line_size != 0:
+        if file_size % self.line_size != 0:
             raise TextFileNotPaddedError("text file is not padded")
 
     def __move_to_start_and_get_stop(
@@ -152,7 +155,7 @@ class PaddedTextFile:
 
         line_number: The line number where to move the cursor
         """
-        self.__file_descriptor.seek(self.__line_size * line_number, 0)
+        self.__file_descriptor.seek(self.line_size * line_number, 0)
 
 
 @contextmanager
