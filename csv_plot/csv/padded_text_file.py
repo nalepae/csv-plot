@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Iterator, List, Optional, Union
+from typing import IO, Iterator, List, Optional, Tuple, Union
 
 
 class OffsetError(Exception):
@@ -74,13 +74,15 @@ class PaddedTextFile:
         if file_size % self.line_size != 0:
             raise TextFileNotPaddedError("text file is not padded")
 
-    def __move_to_start_and_get_stop(
-        self, slice_start: Optional[int], slice_stop: Optional[int]
-    ) -> int:
-        """Move cursor to `start` and return `stop`."""
+    def __get_start_and_stop(
+        self,
+        slice_start: Optional[int],
+        slice_stop: Optional[int],
+    ) -> Tuple[int, int]:
+        """Get `start` and `stop`."""
         start = (
             (
-                slice_start + self.__offset
+                self.__offset + slice_start
                 if slice_start >= 0
                 else max(self.__offset, self.__len + slice_start)
             )
@@ -91,18 +93,16 @@ class PaddedTextFile:
         stop = (
             (
                 (
-                    min(slice_stop - start + self.__offset, self.__len - start)
+                    min(slice_stop + self.__offset, self.__len)
                     if slice_stop >= 0
-                    else self.__len + slice_stop - start
+                    else self.__len + slice_stop
                 )
             )
             if slice_stop is not None
-            else self.__len - start
+            else self.__len
         )
 
-        self.__move_cursor(start)
-
-        return stop
+        return start, stop
 
     def __len__(self):
         """Return the number of lines of the file."""
@@ -130,9 +130,10 @@ class PaddedTextFile:
             return next(self.__file_descriptor).rstrip()
 
         def handle_slice(slice: slice) -> List[str]:
-            stop = self.__move_to_start_and_get_stop(slice.start, slice.stop)
+            start, stop = self.__get_start_and_stop(slice.start, slice.stop)
 
-            return [next(self.__file_descriptor).rstrip() for _ in range(stop)]
+            self.__move_cursor(start)
+            return [next(self.__file_descriptor).rstrip() for _ in range(start, stop)]
 
         if isinstance(line_number_or_slice, int):
             return handle_line_number(line_number_or_slice)
@@ -147,7 +148,10 @@ class PaddedTextFile:
         start: The first line of slice (included)
         stop : The last line of slice (excluded)
         """
-        for _ in range(self.__move_to_start_and_get_stop(start, stop)):
+        real_start, real_stop = self.__get_start_and_stop(start, stop)
+        self.__move_cursor(real_start)
+
+        for _ in range(real_start, real_stop):
             yield next(self.__file_descriptor).rstrip()
 
     def __move_cursor(self, line_number: int) -> None:
