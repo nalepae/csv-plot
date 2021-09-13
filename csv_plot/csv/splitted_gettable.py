@@ -5,14 +5,47 @@ from .gettable import Gettable
 
 
 class SplittedGettable:
-    def __init__(self, iterables: List[Gettable], offset: int) -> None:
-        iterables_lengths = [len(iterable) for iterable in iterables]
+    """A SplittedGettable represents a merge of several `Gettable` objects.
 
-        self.__iterables = iterables
-        self.__len = sum(iterables_lengths)
+    Example with the following custom `GettableList`:
+
+    class GettableList(list):
+        def get(self, start: Optional[int], stop: Optional[int]) -> Iterable:
+            for index in range(
+                start if start is not None else 0,
+                stop if stop is not None else len(self),
+            ):
+                yield self[index]
+
+    one = GettableList(["a", "b", "c"])
+    two = GettableList(["d"])
+    three = GettableList(["e", "f", "g"])
+
+    splitted_gettable = SplittedGettable([one, two, three])
+
+    splitted_gettable[1] == "b"
+    splitted_gettable[-2] == "f"
+    splitted_gettable[3:-2] == ["d", "e", "f"]
+
+    # Warning: Getting a slice will load all retrieved values into memory.
+    #          To get an iterator (which load only what is needed) do:
+
+    splitted_gettable.get(3, -2)
+    """
+
+    def __init__(self, gettables: List[Gettable], offset: int) -> None:
+        """Initializer.
+
+        gettables: List of Gettable objects
+        offset: The offset (apply only on the first Gettable of the list)
+        """
+        gettables_lengths = [len(gettable) for gettable in gettables]
+
+        self.__gettables = gettables
+        self.__len = sum(gettables_lengths)
         self.__offset = offset
 
-        cumulated_lengths = list(accumulate(iterables_lengths))
+        cumulated_lengths = list(accumulate(gettables_lengths))
         shifted_cumulated_lengths = [0] + cumulated_lengths
 
         self.__blocks_start_stop = [
@@ -23,12 +56,18 @@ class SplittedGettable:
         ]
 
     def __len__(self) -> int:
+        """Return total number of elements of all Gettable (excluding the offset)"""
         return self.__len - self.__offset
 
     def __getitem__(self, index_or_slice: Union[int, slice]) -> Union[Any, List]:
+        """Get given value or a given slice of values.
+
+        index_or_slice: The index or the slice where values will be
+                        retrieved
+        """
         if isinstance(index_or_slice, int):
             block_index, item_index = self.__get_index(index_or_slice)
-            return self.__iterables[block_index][item_index]
+            return self.__gettables[block_index][item_index]
         elif isinstance(index_or_slice, slice):
             return list(self.get(index_or_slice.start, index_or_slice.stop))
 
@@ -37,7 +76,7 @@ class SplittedGettable:
 
         iterable_slice_list = [
             (iterable, slice_)
-            for iterable, slice_ in zip(self.__iterables, slices)
+            for iterable, slice_ in zip(self.__gettables, slices)
             if slice_ is not None
         ]
 
