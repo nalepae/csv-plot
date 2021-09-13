@@ -4,6 +4,7 @@ from enum import Enum
 from pathlib import Path
 from typing import IO, Any, Dict, Iterator, List, Optional, Set, Tuple, Union
 
+from .gettable import Gettable
 from .padded_csv_file import _PaddedCSVFile
 
 
@@ -12,7 +13,7 @@ class Side(Enum):
     Right = "right"
 
 
-class _SortedPaddedCSVFile:
+class _SortedPaddedCSVFile(Gettable):
     """Represent a padded CSV file with one sorted column, where all lines are reachable
     through the sorted column with O(log(n)) complexity.
 

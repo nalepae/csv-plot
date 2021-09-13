@@ -2,6 +2,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Iterator, List, Optional, Tuple, Union
 
+from .gettable import Gettable
+
 
 class OffsetError(Exception):
     pass
@@ -11,7 +13,7 @@ class TextFileNotPaddedError(Exception):
     pass
 
 
-class PaddedTextFile:
+class PaddedTextFile(Gettable):
     """Represent a padded text file, where lines are reachable with O(1) complexity.
 
     A padded text file is a text file where all lines have exactly the same length.

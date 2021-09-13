@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Iterator, List, Optional, Tuple, Union, cast
 
+from .gettable import Gettable
 from .padded_text_file import PaddedTextFile
 
 
@@ -9,7 +10,7 @@ class ColumnNotFoundError(Exception):
     pass
 
 
-class _PaddedCSVFile:
+class _PaddedCSVFile(Gettable):
     """Represent a padded CSV file, where lines are reachable with O(1) complexity.
 
     A padded CSV file is a CSV file where all lines have exactly the same length.
