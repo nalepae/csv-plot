@@ -4,7 +4,7 @@ from typing import Any, Iterator, List, Optional, Tuple, Union
 from .gettable import Gettable
 
 
-class SplittedIterable:
+class SplittedGettable:
     def __init__(self, iterables: List[Gettable], offset: int) -> None:
         iterables_lengths = [len(iterable) for iterable in iterables]
 

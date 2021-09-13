@@ -2,7 +2,7 @@ from typing import Iterable, List, Optional
 
 import pytest
 
-from ..splitted_iterable import SplittedIterable
+from ..splitted_gettable import SplittedGettable
 
 
 class GettableList(list):
@@ -25,7 +25,7 @@ def gettable_lists() -> List[GettableList]:
 
 
 def test_splitted_iterable_index_offset_0(gettable_lists):
-    splitted_iterable = SplittedIterable(gettable_lists, 0)
+    splitted_iterable = SplittedGettable(gettable_lists, 0)
 
     assert (len(splitted_iterable)) == 10
 
@@ -48,7 +48,7 @@ def test_splitted_iterable_index_offset_0(gettable_lists):
 
 
 def test_splitted_iterable_slice_offset_0(gettable_lists):
-    splitted_iterable = SplittedIterable(gettable_lists, 0)
+    splitted_iterable = SplittedGettable(gettable_lists, 0)
 
     assert splitted_iterable[0:0] == []
 
@@ -73,7 +73,7 @@ def test_splitted_iterable_slice_offset_0(gettable_lists):
 
 
 def test_splitted_iterable_index_offset_1(gettable_lists):
-    splitted_iterable = SplittedIterable(gettable_lists, 1)
+    splitted_iterable = SplittedGettable(gettable_lists, 1)
 
     assert (len(splitted_iterable)) == 9
 
@@ -95,7 +95,7 @@ def test_splitted_iterable_index_offset_1(gettable_lists):
 
 
 def test_splitted_iterable_slice_offset_1(gettable_lists):
-    splitted_iterable = SplittedIterable(gettable_lists, 1)
+    splitted_iterable = SplittedGettable(gettable_lists, 1)
 
     assert splitted_iterable[0:0] == []
 
