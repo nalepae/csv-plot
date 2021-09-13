@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from csv_plot.csv.splitted_gettable import SplittedGettable
 from pathlib import Path
 from typing import IO, Iterator, List, Optional, Tuple, Union
 
@@ -162,6 +163,24 @@ class PaddedTextFile(Gettable):
         line_number: The line number where to move the cursor
         """
         self.__file_descriptor.seek(self.line_size * line_number, 0)
+
+
+class SplittedPaddedTextFile(SplittedGettable):
+    """Splitted Padded Text File"""
+
+    def __init__(self, file_descriptors: List[IO], file_sizes: List[int], offset: int):
+        """Initializer.
+
+        file_descriptors: A list of file descriptors
+        file_sizes: The file size for each file descriptor
+        offset: The offset to apply to the first file descriptor
+        """
+        padded_text_files = [
+            PaddedTextFile(file_descriptor, file_size, offset=0)
+            for (file_descriptor, file_size) in zip(file_descriptors, file_sizes)
+        ]
+
+        super().__init__(padded_text_files, offset)  # type:ignore
 
 
 @contextmanager

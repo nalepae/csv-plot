@@ -1,11 +1,12 @@
 from pathlib import Path
-from typing import IO
+from typing import IO, List, Tuple
 
 import pytest
 from pytest import fixture
 
 from ..padded_text_file import (
     OffsetError,
+    SplittedPaddedTextFile,
     TextFileNotPaddedError,
     PaddedTextFile,
     padded_text_file,
@@ -34,6 +35,11 @@ def padded_file_path() -> Path:
 
 
 @fixture
+def splitted_padded_dir_path() -> Path:
+    return Path(assets.__file__).parent / "splitted_padded_csv"
+
+
+@fixture
 def padded_file_descriptor(padded_file_path: Path) -> IO:
     return padded_file_path.open()
 
@@ -41,6 +47,14 @@ def padded_file_descriptor(padded_file_path: Path) -> IO:
 @fixture
 def padded_file_size(padded_file_path: Path) -> int:
     return padded_file_path.stat().st_size
+
+
+@fixture
+def splitted_padded_csv_file_descriptors_sizes(
+    splitted_padded_dir_path: Path,
+) -> Tuple[List[IO], List[int]]:
+    paths = [(splitted_padded_dir_path / f"{index}.csv") for index in range(3)]
+    return list(zip(*[(path.open(), path.stat().st_size) for path in paths]))  # type: ignore
 
 
 def test_not_padded(not_padded_file_descriptor: IO, not_padded_file_size: int) -> None:
@@ -209,3 +223,50 @@ def test_offset_out_of_bound(padded_file_descriptor: IO, padded_file_size: int) 
 
     with pytest.raises(OffsetError):
         PaddedTextFile(padded_file_descriptor, padded_file_size, 7)
+
+
+def test_splitted_padded_text_file_offset_0(
+    splitted_padded_csv_file_descriptors_sizes: Tuple[List[IO], List[int]]
+):
+    file_descriptors, sizes = splitted_padded_csv_file_descriptors_sizes
+
+    splitted_padded_text_file = SplittedPaddedTextFile(
+        file_descriptors, sizes, offset=0
+    )
+
+    assert len(splitted_padded_text_file) == 6
+
+    assert splitted_padded_text_file[:] == [
+        "a,b,c,d",
+        "1,2,3,4",
+        "5,6,7,8",
+        "9,10,11,12",
+        "13,14,15,16",
+        "17,18,19,20",
+    ]
+
+    assert splitted_padded_text_file[-1] == "17,18,19,20"
+    assert splitted_padded_text_file[-1:] == ["17,18,19,20"]
+
+
+def test_splitted_padded_text_file_offset_1(
+    splitted_padded_csv_file_descriptors_sizes: Tuple[List[IO], List[int]]
+):
+    file_descriptors, sizes = splitted_padded_csv_file_descriptors_sizes
+
+    splitted_padded_text_file = SplittedPaddedTextFile(
+        file_descriptors, sizes, offset=1
+    )
+
+    assert len(splitted_padded_text_file) == 5
+
+    assert splitted_padded_text_file[:] == [
+        "1,2,3,4",
+        "5,6,7,8",
+        "9,10,11,12",
+        "13,14,15,16",
+        "17,18,19,20",
+    ]
+
+    assert splitted_padded_text_file[-1] == "17,18,19,20"
+    assert splitted_padded_text_file[-1:] == ["17,18,19,20"]
