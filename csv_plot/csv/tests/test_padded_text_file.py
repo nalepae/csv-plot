@@ -151,6 +151,7 @@ def test_slice_offset(padded_file_descriptor: IO, padded_file_size: int) -> None
 
     assert (
         padded_text_file[:]
+        == padded_text_file[-1000:1000]
         == list(padded_text_file.get())
         == [
             "1,2,3,4",
@@ -163,12 +164,14 @@ def test_slice_offset(padded_file_descriptor: IO, padded_file_size: int) -> None
 
     assert (
         padded_text_file[:3]
+        == padded_text_file[-5:3]
         == list(padded_text_file.get(stop=3))
         == ["1,2,3,4", "5,6,7,8", "9,10,11,12"]
     )
 
     assert (
         padded_text_file[4:]
+        == padded_text_file[-1:]
         == list(padded_text_file.get(start=4))
         == [
             "17,18,19,20",
