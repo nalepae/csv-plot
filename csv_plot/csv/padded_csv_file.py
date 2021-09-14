@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import IO, Any, Iterator, List, Optional, Tuple, Union, cast
 
 from .gettable import Gettable
-from .padded_text_file import PaddedTextFile
+from .padded_text_file import SplittedPaddedTextFile
 
 
 class ColumnNotFoundError(Exception):
@@ -20,12 +20,12 @@ class _PaddedCSVFile(Gettable):
     Only line(s) you request will be load in memory.
 
     Usage:
-    padded_csv_file = _PaddedCSVFile(<file_descriptor>,
+    padded_csv_file = _PaddedCSVFile(<files_descriptor_and_size>,
                                      <file_zise>,
                                      <column_and_type_tuples>
                                     )
 
-    Example: With the following file represented by <file_descriptor>:
+    Example: With the following file represented by <files_descriptor_and_size>:
     a,b,c,d
     1,2,3,4
     5,6,7,8
@@ -33,7 +33,7 @@ class _PaddedCSVFile(Gettable):
     13,14,15,16
     17,18,19,20
 
-    padded_csv_file = _PaddedCSVFile(<file_descriptor>,
+    padded_csv_file = _PaddedCSVFile(<files_descriptor_and_size>,
                                      <file_size>,
                                      [("d", int), ("b", int)]
                                     )
@@ -61,16 +61,17 @@ class _PaddedCSVFile(Gettable):
 
     def __init__(
         self,
-        file_descriptor: IO,
-        file_size: int,
+        files_descriptor_and_size: List[Tuple[IO, int]],
         columns_and_types: List[Tuple[str, type]],
         unwrap_if_one_column=False,
     ) -> None:
         """Constructor.
 
-        file_descriptor: The file descriptor pointing to the padded CSV file
-        file_size      : The file size (in bytes) of the padded CSV file pointed by
-                         `file_descriptor`
+        files_descriptor_and_size:
+            A liste of tuples like:
+                - The file descriptor pointing to the padded CSV file
+                - The size (in bytes) of th padded CSV file pointed by the file
+                  descriptor
         columns_and_types: A list of tuples where each tuple has:
                            - The name of the column
                            - The type of the column
@@ -81,7 +82,7 @@ class _PaddedCSVFile(Gettable):
         If at least one line of the file pointed by `file_descriptor` has not the same
         length than others, a `TextFileNotPaddedError` is raised.
         """
-        padded_text_file = PaddedTextFile(file_descriptor, file_size, offset=0)
+        padded_text_file = SplittedPaddedTextFile(files_descriptor_and_size, offset=0)
         header_line = cast(str, padded_text_file[0])
         headers = header_line.split(",")
 
@@ -102,7 +103,9 @@ class _PaddedCSVFile(Gettable):
             (header_to_index[column], type) for column, type in columns_and_types
         ]
 
-        self.__padded_text_file = PaddedTextFile(file_descriptor, file_size, offset=1)
+        self.__padded_text_file = SplittedPaddedTextFile(
+            files_descriptor_and_size, offset=1
+        )
         _, *others = columns_and_types
         self.__has_to_unwrap = unwrap_if_one_column and others == []
 
@@ -219,7 +222,7 @@ def padded_csv_file(
     try:
         with path.open() as file_descriptor:
             yield _PaddedCSVFile(
-                file_descriptor, path.stat().st_size, columns_and_types
+                [(file_descriptor, path.stat().st_size)], columns_and_types
             )
     finally:
         pass

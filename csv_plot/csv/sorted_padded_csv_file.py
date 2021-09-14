@@ -88,10 +88,10 @@ class _SortedPaddedCSVFile(Gettable):
         length than others, a `TextFileNotPaddedError` is raised.
         """
         self.__x_file = _PaddedCSVFile(
-            file_descriptor_1, file_size, [x_and_type], unwrap_if_one_column=True
+            [(file_descriptor_1, file_size)], [x_and_type], unwrap_if_one_column=True
         )
 
-        self.__ys_file = _PaddedCSVFile(file_descriptor_2, file_size, ys_and_types)
+        self.__ys_file = _PaddedCSVFile([(file_descriptor_2, file_size)], ys_and_types)
 
     def __get_line_number_of(self, x: Any, side: Side) -> int:
         return {Side.Left: bisect_left, Side.Right: bisect_right}[side](

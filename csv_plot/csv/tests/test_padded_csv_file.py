@@ -25,19 +25,21 @@ def padded_file_size(padded_file_path: Path) -> int:
 
 def test_bad_columns(padded_file_descriptor: IO, padded_file_size: int) -> None:
     with pytest.raises(ColumnNotFoundError):
-        _PaddedCSVFile(padded_file_descriptor, padded_file_size, [("not_present", int)])
+        _PaddedCSVFile(
+            [(padded_file_descriptor, padded_file_size)], [("not_present", int)]
+        )
 
 
 def test_empy_column_and_type(
     padded_file_descriptor: IO, padded_file_size: int
 ) -> None:
     with pytest.raises(ValueError):
-        _PaddedCSVFile(padded_file_descriptor, padded_file_size, [])
+        _PaddedCSVFile([(padded_file_descriptor, padded_file_size)], [])
 
 
 def test_len(padded_file_descriptor: IO, padded_file_size: int) -> None:
     padded_csv_file = _PaddedCSVFile(
-        padded_file_descriptor, padded_file_size, [("d", int), ("b", int)]
+        [(padded_file_descriptor, padded_file_size)], [("d", int), ("b", int)]
     )
 
     assert len(padded_csv_file) == 5
@@ -45,7 +47,7 @@ def test_len(padded_file_descriptor: IO, padded_file_size: int) -> None:
 
 def test_line(padded_file_descriptor: IO, padded_file_size: int) -> None:
     padded_csv_file = _PaddedCSVFile(
-        padded_file_descriptor, padded_file_size, [("d", int), ("b", int)]
+        [(padded_file_descriptor, padded_file_size)], [("d", int), ("b", int)]
     )
 
     assert padded_csv_file[0] == [4, 2]
@@ -54,7 +56,7 @@ def test_line(padded_file_descriptor: IO, padded_file_size: int) -> None:
 
 def test_line_one(padded_file_descriptor: IO, padded_file_size: int) -> None:
     padded_csv_file = _PaddedCSVFile(
-        padded_file_descriptor, padded_file_size, [("d", int)]
+        [(padded_file_descriptor, padded_file_size)], [("d", int)]
     )
 
     assert padded_csv_file[0] == [4]
@@ -63,8 +65,7 @@ def test_line_one(padded_file_descriptor: IO, padded_file_size: int) -> None:
 
 def test_line_one_unwrapped(padded_file_descriptor: IO, padded_file_size: int) -> None:
     padded_csv_file = _PaddedCSVFile(
-        padded_file_descriptor,
-        padded_file_size,
+        [(padded_file_descriptor, padded_file_size)],
         [("d", int)],
         unwrap_if_one_column=True,
     )
@@ -75,7 +76,7 @@ def test_line_one_unwrapped(padded_file_descriptor: IO, padded_file_size: int) -
 
 def test_slice(padded_file_descriptor: IO, padded_file_size: int) -> None:
     padded_csv_file = _PaddedCSVFile(
-        padded_file_descriptor, padded_file_size, [("d", int), ("b", int)]
+        [(padded_file_descriptor, padded_file_size)], [("d", int), ("b", int)]
     )
 
     assert (
@@ -116,7 +117,7 @@ def test_padded_csv_file(padded_file_path):
 
 def test_slice_one(padded_file_descriptor: IO, padded_file_size: int) -> None:
     padded_csv_file = _PaddedCSVFile(
-        padded_file_descriptor, padded_file_size, [("d", int)]
+        [(padded_file_descriptor, padded_file_size)], [("d", int)]
     )
 
     assert (
@@ -128,8 +129,7 @@ def test_slice_one(padded_file_descriptor: IO, padded_file_size: int) -> None:
 
 def test_slice_one_unwrapped(padded_file_descriptor: IO, padded_file_size: int) -> None:
     padded_csv_file = _PaddedCSVFile(
-        padded_file_descriptor,
-        padded_file_size,
+        [(padded_file_descriptor, padded_file_size)],
         [("d", int)],
         unwrap_if_one_column=True,
     )
