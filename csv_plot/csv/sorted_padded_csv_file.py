@@ -24,8 +24,7 @@ class _SortedPaddedCSVFile(Gettable):
     Only line(s) you request will be load in memory.
 
     Usage:
-    sorted_padded_csv_file = _SortedPaddedCSVFile(<file_descriptor>,
-                                                  <file_zise>,
+    sorted_padded_csv_file = _SortedPaddedCSVFile(<files_descriptors_and_size>,
                                                   <x_column_and_type_tuple>,
                                                   <y_column_and_type_tuples>
                                                  )
@@ -39,8 +38,7 @@ class _SortedPaddedCSVFile(Gettable):
     17,18,19,20
 
     Here all columns are sorted, but in this example, only the column "c" has to be.
-    sorted_padded_csv_file = _SortedPaddedCSVFile(<file_descriptor>,
-                                                  <file_size>,
+    sorted_padded_csv_file = _SortedPaddedCSVFile(<files_descriptors_and_size>,
                                                   ("c", int)
                                                   [("d", int), ("b", int)]
                                                  )
@@ -65,33 +63,46 @@ class _SortedPaddedCSVFile(Gettable):
 
     def __init__(
         self,
-        file_descriptor_1: IO,
-        file_descriptor_2: IO,
-        file_size: int,
+        files_descriptors_and_size: List[Tuple[IO, IO, int]],
         x_and_type: Tuple[str, type],
         ys_and_types: List[Tuple[str, type]],
     ) -> None:
         """Constructor.
 
-        file_descriptor_1: The file descriptor pointing to the padded CSV file.
-        file_descriptor_2: The file descriptor pointing to the padded CSV file.
-        file_size        : The file size (in bytes) of the padded CSV file pointed by
-                           `file_descriptor`
-        x_and_type       : A tuple containing
-                           - The name of the column on which requests will be done
-                           - The type of the column on which requests will be done
-        ys_and_types     : A list of tuples where each tuple has:
-                           - The name of the column
-                           - The type of the column
+        files_descriptors_and_size:
+            A list of tuple, where each tuple contains
+            - A first file descriptor to the file
+            - A second (and distinct) file descriptor to the file
+            - The size (in bytes) of the file
+
+        x_and_type:
+            A tuple containing
+            - The name of the column on which requests will be done
+            - The type of the column on which requests will be done
+
+        ys_and_types:
+            A list of tuples where each tuple has:
+            - The name of the column
+            - The type of the column
 
         If at least one line of the file pointed by `file_descriptor` has not the same
         length than others, a `TextFileNotPaddedError` is raised.
         """
+        files_descriptor_1_and_size = [
+            (file_descriptor, size)
+            for file_descriptor, _, size in files_descriptors_and_size
+        ]
+
+        files_descriptor_2_and_size = [
+            (file_descriptor, size)
+            for _, file_descriptor, size in files_descriptors_and_size
+        ]
+
         self.__x_file = _PaddedCSVFile(
-            [(file_descriptor_1, file_size)], [x_and_type], unwrap_if_one_column=True
+            files_descriptor_1_and_size, [x_and_type], unwrap_if_one_column=True
         )
 
-        self.__ys_file = _PaddedCSVFile([(file_descriptor_2, file_size)], ys_and_types)
+        self.__ys_file = _PaddedCSVFile(files_descriptor_2_and_size, ys_and_types)
 
     def __get_line_number_of(self, x: Any, side: Side) -> int:
         return {Side.Left: bisect_left, Side.Right: bisect_right}[side](
@@ -229,9 +240,7 @@ def sorted_padded_csv_file(
     try:
         with path.open() as file_descriptor_1, path.open() as file_descriptor_2:
             yield _SortedPaddedCSVFile(
-                file_descriptor_1,
-                file_descriptor_2,
-                path.stat().st_size,
+                [(file_descriptor_1, file_descriptor_2, path.stat().st_size)],
                 x_and_type,
                 ys_and_types,
             )

@@ -42,9 +42,7 @@ def test_len(
     padded_file_descriptor_1: IO, padded_file_descriptor_2: IO, padded_file_size: int
 ) -> None:
     sorted_padded_csv_file = _SortedPaddedCSVFile(
-        padded_file_descriptor_1,
-        padded_file_descriptor_2,
-        padded_file_size,
+        [(padded_file_descriptor_1, padded_file_descriptor_2, padded_file_size)],
         ("c", int),
         [("d", int), ("b", int)],
     )
@@ -56,9 +54,7 @@ def test_line(
     padded_file_descriptor_1: IO, padded_file_descriptor_2: IO, padded_file_size: int
 ) -> None:
     sorted_padded_csv_file = _SortedPaddedCSVFile(
-        padded_file_descriptor_1,
-        padded_file_descriptor_2,
-        padded_file_size,
+        [(padded_file_descriptor_1, padded_file_descriptor_2, padded_file_size)],
         ("c", int),
         [("d", int), ("b", int)],
     )
@@ -73,9 +69,7 @@ def test_slice(
     padded_file_descriptor_1: IO, padded_file_descriptor_2: IO, padded_file_size: int
 ) -> None:
     sorted_padded_csv_file = _SortedPaddedCSVFile(
-        padded_file_descriptor_1,
-        padded_file_descriptor_2,
-        padded_file_size,
+        [(padded_file_descriptor_1, padded_file_descriptor_2, padded_file_size)],
         ("c", int),
         [("d", int), ("b", int)],
     )
@@ -129,9 +123,7 @@ def test_number_of_lines_between(
     padded_file_descriptor_1: IO, padded_file_descriptor_2: IO, padded_file_size: int
 ) -> None:
     sorted_padded_csv_file = _SortedPaddedCSVFile(
-        padded_file_descriptor_1,
-        padded_file_descriptor_2,
-        padded_file_size,
+        [(padded_file_descriptor_1, padded_file_descriptor_2, padded_file_size)],
         ("c", int),
         [("d", int), ("b", int)],
     )
