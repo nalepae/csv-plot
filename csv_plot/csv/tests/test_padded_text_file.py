@@ -50,11 +50,11 @@ def padded_file_size(padded_file_path: Path) -> int:
 
 
 @fixture
-def splitted_padded_csv_file_descriptors_sizes(
+def splitted_padded_csv_files_descriptor_size(
     splitted_padded_dir_path: Path,
-) -> Tuple[List[IO], List[int]]:
+) -> List[Tuple[IO, int]]:
     paths = [(splitted_padded_dir_path / f"{index}.csv") for index in range(3)]
-    return list(zip(*[(path.open(), path.stat().st_size) for path in paths]))  # type: ignore
+    return [(path.open(), path.stat().st_size) for path in paths]
 
 
 def test_not_padded(not_padded_file_descriptor: IO, not_padded_file_size: int) -> None:
@@ -226,12 +226,11 @@ def test_offset_out_of_bound(padded_file_descriptor: IO, padded_file_size: int) 
 
 
 def test_splitted_padded_text_file_offset_0(
-    splitted_padded_csv_file_descriptors_sizes: Tuple[List[IO], List[int]]
+    splitted_padded_csv_files_descriptor_size: List[Tuple[IO, int]]
 ):
-    file_descriptors, sizes = splitted_padded_csv_file_descriptors_sizes
 
     splitted_padded_text_file = SplittedPaddedTextFile(
-        file_descriptors, sizes, offset=0
+        splitted_padded_csv_files_descriptor_size, offset=0
     )
 
     assert len(splitted_padded_text_file) == 6
@@ -250,12 +249,11 @@ def test_splitted_padded_text_file_offset_0(
 
 
 def test_splitted_padded_text_file_offset_1(
-    splitted_padded_csv_file_descriptors_sizes: Tuple[List[IO], List[int]]
+    splitted_padded_csv_files_descriptor_size: List[Tuple[IO, int]]
 ):
-    file_descriptors, sizes = splitted_padded_csv_file_descriptors_sizes
 
     splitted_padded_text_file = SplittedPaddedTextFile(
-        file_descriptors, sizes, offset=1
+        splitted_padded_csv_files_descriptor_size, offset=1
     )
 
     assert len(splitted_padded_text_file) == 5

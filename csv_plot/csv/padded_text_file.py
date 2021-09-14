@@ -168,16 +168,17 @@ class PaddedTextFile(Gettable):
 class SplittedPaddedTextFile(SplittedGettable):
     """Splitted Padded Text File"""
 
-    def __init__(self, file_descriptors: List[IO], file_sizes: List[int], offset: int):
+    def __init__(self, files_descriptor_and_size: List[Tuple[IO, int]], offset: int):
         """Initializer.
 
-        file_descriptors: A list of file descriptors
-        file_sizes: The file size for each file descriptor
+        files_descriptor_and_size:
+            A list of tuple (<file descriptor>, <size of corresponding file>)
+
         offset: The offset to apply to the first file descriptor
         """
         padded_text_files = [
             PaddedTextFile(file_descriptor, file_size, offset=0)
-            for (file_descriptor, file_size) in zip(file_descriptors, file_sizes)
+            for file_descriptor, file_size in files_descriptor_and_size
         ]
 
         super().__init__(padded_text_files, offset)  # type:ignore
