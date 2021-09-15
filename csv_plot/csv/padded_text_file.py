@@ -63,6 +63,7 @@ class PaddedTextFile(Gettable):
         If at least one line of the file pointed by `file_descriptor` has not the same
         length than others, a `TextFileNotPaddedError` is raised.
         """
+        file_descriptor.seek(0)
         self.__offset = offset
         self.__file_descriptor = file_descriptor
 
