@@ -237,12 +237,9 @@ def sorted_padded_csv_file(
         #          If possible, use spcf.get(start=a, stop=b) instead of
         #                           spcf[a, b]
     """
-    try:
-        with path.open() as file_descriptor_1, path.open() as file_descriptor_2:
-            yield _SortedPaddedCSVFile(
-                [(file_descriptor_1, file_descriptor_2, path.stat().st_size)],
-                x_and_type,
-                ys_and_types,
-            )
-    finally:
-        pass
+    with path.open() as file_descriptor_1, path.open() as file_descriptor_2:
+        yield _SortedPaddedCSVFile(
+            [(file_descriptor_1, file_descriptor_2, path.stat().st_size)],
+            x_and_type,
+            ys_and_types,
+        )
