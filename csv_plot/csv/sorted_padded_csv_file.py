@@ -1,5 +1,5 @@
 from bisect import bisect_left, bisect_right
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from enum import Enum
 from pathlib import Path
 from typing import IO, Any, Dict, Iterator, List, Optional, Set, Tuple, Union
@@ -232,14 +232,35 @@ def sorted_padded_csv_file(
         # Get all lines corresponding to 6.5 <= c <= 15.5
         spcf[6.5:15.5] # = [(7, [8, 6]), (11, [12, 10]), (15, [16, 14])]
 
+        # <file_path> could be either a file, or a directory.
+        # If it is a directory, each file inside should follow the convention <int>.csv.
+        # The file which has the smaller <int> should have the header as a first line.
+
         # Warning: All lines in the selected range will be loaded into memory.
         #          For example: spcf[:] will load all the file in memory.
         #          If possible, use spcf.get(start=a, stop=b) instead of
         #                           spcf[a, b]
     """
-    with path.open() as file_descriptor_1, path.open() as file_descriptor_2:
-        yield _SortedPaddedCSVFile(
-            [(file_descriptor_1, file_descriptor_2, path.stat().st_size)],
-            x_and_type,
-            ys_and_types,
-        )
+    if path.is_file():
+        with path.open() as file_descriptor_1, path.open() as file_descriptor_2:
+            yield _SortedPaddedCSVFile(
+                [(file_descriptor_1, file_descriptor_2, path.stat().st_size)],
+                x_and_type,
+                ys_and_types,
+            )
+    else:
+        paths = sorted(path.glob("*.csv"), key=lambda item: int(item.stem))
+
+        with ExitStack() as stack:
+            files_descriptors_and_size = [
+                (
+                    stack.enter_context(path.open()),
+                    stack.enter_context(path.open()),
+                    path.stat().st_size,
+                )
+                for path in paths
+            ]
+
+            yield _SortedPaddedCSVFile(
+                files_descriptors_and_size, x_and_type, ys_and_types  # type: ignore
+            )

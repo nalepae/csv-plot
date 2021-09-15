@@ -38,6 +38,11 @@ def padded_file_size(padded_file_path: Path) -> int:
     return padded_file_path.stat().st_size
 
 
+@fixture
+def splitted_padded_csv() -> Path:
+    return Path(assets.__file__).parent / "splitted_padded_csv"
+
+
 def test_len(
     padded_file_descriptor_1: IO, padded_file_descriptor_2: IO, padded_file_size: int
 ) -> None:
@@ -168,3 +173,16 @@ def test_sorted_padded_csv_file(padded_file_path):
             == list(spcf.get(start=14.5, stop=42))
             == [(15, [16, 14]), (19, [20, 18])]
         )
+
+
+def test_splitted_sorted_padded_csv_file(splitted_padded_csv):
+    with sorted_padded_csv_file(
+        splitted_padded_csv, ("c", int), [("d", int), ("b", int)]
+    ) as spcf:
+        assert (
+            spcf[6.5:]
+            == spcf[7:]
+            == [(7, [8, 6]), (11, [12, 10]), (15, [16, 14]), (19, [20, 18])]
+        )
+
+        assert spcf[:3] == spcf[:3.5] == [(3, [4, 2])]
