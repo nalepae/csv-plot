@@ -6,7 +6,14 @@ from shutil import copy2
 import pytest
 from pytest import fixture
 
-from ..pad_and_sample import pad, pad_and_sample, pseudo_hash, sample, sample_sampled
+from ..pad_and_sample import (
+    compute_chunks,
+    pad,
+    pad_and_sample,
+    pseudo_hash,
+    sample,
+    sample_sampled,
+)
 from ..tests import assets
 
 
@@ -86,6 +93,69 @@ def test_pseudo_hash(tmp_path: Path):
 
     assert pseudo_hash(path) == "46141dc64506ddc74fcf3cae348e0d77"
     assert pseudo_hash(path, "12345") == "ece35c8647c0fe39e450443c9514b412"
+
+
+def test_compute_chunks(not_padded_file_path: Path):
+    with not_padded_file_path.open() as file_descriptor:
+        assert compute_chunks(
+            file_descriptor, not_padded_file_path.stat().st_size, 1
+        ) == [
+            (0, 59),
+        ]
+
+        assert compute_chunks(
+            file_descriptor, not_padded_file_path.stat().st_size, 2
+        ) == [
+            (0, 35),
+            (35, 59),
+        ]
+
+        assert compute_chunks(
+            file_descriptor, not_padded_file_path.stat().st_size, 4
+        ) == [
+            (0, 16),
+            (16, 35),
+            (35, 47),
+            (47, 59),
+        ]
+
+        assert compute_chunks(
+            file_descriptor, not_padded_file_path.stat().st_size, 10
+        ) == [
+            (0, 8),
+            (8, 16),
+            (16, 24),
+            (24, 35),
+            (35, 47),
+            (47, 59),
+        ]
+
+
+def test_compute_chunks_padded(padded_file_path: Path):
+    with padded_file_path.open() as file_descriptor:
+        assert compute_chunks(file_descriptor, padded_file_path.stat().st_size, 1) == [
+            (0, 72),
+        ]
+
+        assert compute_chunks(file_descriptor, padded_file_path.stat().st_size, 2) == [
+            (0, 36),
+            (36, 72),
+        ]
+
+        assert compute_chunks(file_descriptor, padded_file_path.stat().st_size, 3) == [
+            (0, 24),
+            (24, 48),
+            (48, 72),
+        ]
+
+        assert compute_chunks(file_descriptor, padded_file_path.stat().st_size, 6) == [
+            (0, 12),
+            (12, 24),
+            (24, 36),
+            (36, 48),
+            (48, 60),
+            (60, 72),
+        ]
 
 
 def test_sample(tmpdir, not_padded_file_path, sampled_file_path):

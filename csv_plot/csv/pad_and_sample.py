@@ -5,7 +5,7 @@ from collections import defaultdict
 from pathlib import Path
 from shutil import copy2
 from tempfile import NamedTemporaryFile
-from typing import Dict, List, Optional, Set, Tuple
+from typing import IO, Dict, List, Optional, Set, Tuple
 
 from .padded_text_file import padded_text_file
 
@@ -20,6 +20,54 @@ def pseudo_hash(path: Path, string: str = "") -> str:
     """
     string = "-".join([str(os.path.getsize(path)), str(os.path.getmtime(path)), string])
     return str(hashlib.md5(bytes(string, "utf-8")).hexdigest())
+
+
+def compute_chunks(
+    file_descriptor: IO, file_size: int, nb_chunks: int
+) -> List[Tuple[int, int]]:
+    """Take a `file_descriptor` to a (non padded) text file, the file size and a
+    number of chunks. Outputs a list of tuple.
+    For each tuple, the first item represents the start byte index of a chunk, and the
+    second item represents the end byte index of the same chunk.
+
+    Example, with the following file:
+    ---------------------------------
+
+    a,b,c,d
+    1,2,3,4
+    5,6,7,8
+    9,10,11,12
+    13,14,15,16
+    17,18,19,20
+
+    compute_chunks(<file_descriptor>, 4) == [
+            (0, 16),
+            (16, 35),
+            (35, 47),
+            (47, 59),
+        ]
+    """
+
+    def get_next_new_line_byte_index(
+        file_descriptor: IO, arithmetic_chunk_start: int
+    ) -> int:
+        file_descriptor.seek(arithmetic_chunk_start)
+        return arithmetic_chunk_start + len(next(file_descriptor))
+
+    arithmetic_chunk_size = file_size / nb_chunks
+
+    arithmetic_chunks_start = (
+        int(index * arithmetic_chunk_size) - 1 for index in range(1, nb_chunks + 1)
+    )
+
+    new_lines_byte_index_with_duplicate = [0] + [
+        get_next_new_line_byte_index(file_descriptor, arithmetic_chunk_start)
+        for arithmetic_chunk_start in arithmetic_chunks_start
+    ]
+
+    new_lines_byte_index = list(dict.fromkeys(new_lines_byte_index_with_duplicate))
+
+    return list(zip(new_lines_byte_index[:-1], new_lines_byte_index[1:]))
 
 
 def sample(
