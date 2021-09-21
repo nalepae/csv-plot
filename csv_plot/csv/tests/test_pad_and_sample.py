@@ -1,7 +1,6 @@
 import filecmp
 import os
 from pathlib import Path
-from shutil import copy2
 
 import pytest
 from pytest import fixture
@@ -75,13 +74,8 @@ def _3(hashed: Path):
 
 
 def test_pad(tmpdir, not_padded_file_path, padded_file_path):
-    copy2(not_padded_file_path, tmpdir)
-
-    pad(tmpdir / "not_padded.csv")
-    assert filecmp.cmp(tmpdir / "not_padded.csv", padded_file_path)
-
-    pad(tmpdir / "not_padded.csv")
-    assert filecmp.cmp(tmpdir / "not_padded.csv", padded_file_path)
+    pad(not_padded_file_path, tmpdir / "padded.csv")
+    assert filecmp.cmp(tmpdir / "padded.csv", padded_file_path)
 
 
 def test_pseudo_hash(tmp_path: Path):
