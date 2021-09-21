@@ -20,9 +20,7 @@ def pseudo_hash(path: Path, string: str = "") -> str:
     return str(hashlib.md5(bytes(string, "utf-8")).hexdigest())
 
 
-def compute_chunks(
-    file_descriptor: IO, file_size: int, nb_chunks: int
-) -> List[Tuple[int, int]]:
+def compute_chunks(file_path: Path, nb_chunks: int) -> List[Tuple[int, int]]:
     """Take a `file_descriptor` to a (non padded) text file, the file size and a
     number of chunks. Outputs a list of tuple.
     For each tuple, the first item represents the start byte index of a chunk, and the
@@ -38,7 +36,7 @@ def compute_chunks(
     13,14,15,16
     17,18,19,20
 
-    compute_chunks(<file_descriptor>, 4) == [
+    compute_chunks(<path_file>, 4) == [
             (0, 16),
             (16, 35),
             (35, 47),
@@ -52,16 +50,17 @@ def compute_chunks(
         file_descriptor.seek(arithmetic_chunk_start)
         return arithmetic_chunk_start + len(next(file_descriptor))
 
-    arithmetic_chunk_size = file_size / nb_chunks
+    arithmetic_chunk_size = file_path.stat().st_size / nb_chunks
 
     arithmetic_chunks_start = (
         int(index * arithmetic_chunk_size) - 1 for index in range(1, nb_chunks + 1)
     )
 
-    new_lines_byte_index_with_duplicate = [0] + [
-        get_next_new_line_byte_index(file_descriptor, arithmetic_chunk_start)
-        for arithmetic_chunk_start in arithmetic_chunks_start
-    ]
+    with file_path.open() as file_descriptor:
+        new_lines_byte_index_with_duplicate = [0] + [
+            get_next_new_line_byte_index(file_descriptor, arithmetic_chunk_start)
+            for arithmetic_chunk_start in arithmetic_chunks_start
+        ]
 
     new_lines_byte_index = list(dict.fromkeys(new_lines_byte_index_with_duplicate))
 
