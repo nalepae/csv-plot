@@ -22,6 +22,21 @@ def padded_file_path() -> Path:
 
 
 @fixture
+def padded_0_1_file_path() -> Path:
+    return Path(assets.__file__).parent / "padded_0_1.csv"
+
+
+@fixture
+def padded_2_4_file_path() -> Path:
+    return Path(assets.__file__).parent / "padded_2_4.csv"
+
+
+@fixture
+def padded_5_file_path() -> Path:
+    return Path(assets.__file__).parent / "padded_5.csv"
+
+
+@fixture
 def sampled_file_path() -> Path:
     return Path(assets.__file__).parent / "sampled.csv"
 
@@ -76,6 +91,21 @@ def _3(hashed: Path):
 def test_pad(tmpdir, not_padded_file_path, padded_file_path):
     pad(not_padded_file_path, tmpdir / "padded.csv")
     assert filecmp.cmp(tmpdir / "padded.csv", padded_file_path)
+
+
+def test_pad_0_1(tmpdir, not_padded_file_path, padded_0_1_file_path):
+    pad(not_padded_file_path, tmpdir / "padded.csv", 0, 16)
+    assert filecmp.cmp(tmpdir / "padded.csv", padded_0_1_file_path)
+
+
+def test_pad_2_4(tmpdir, not_padded_file_path, padded_2_4_file_path):
+    pad(not_padded_file_path, tmpdir / "padded.csv", 16, 47)
+    assert filecmp.cmp(tmpdir / "padded.csv", padded_2_4_file_path)
+
+
+def test_pad_5(tmpdir, not_padded_file_path, padded_5_file_path):
+    pad(not_padded_file_path, tmpdir / "padded.csv", 47, 59)
+    assert filecmp.cmp(tmpdir / "padded.csv", padded_5_file_path)
 
 
 def test_pseudo_hash(tmp_path: Path):
