@@ -42,8 +42,18 @@ def sampled_file_path() -> Path:
 
 
 @fixture
-def double_sampled_file_path() -> Path:
-    return Path(assets.__file__).parent / "double_sampled.csv"
+def sampled_0_1_file_path() -> Path:
+    return Path(assets.__file__).parent / "sampled_0_1.csv"
+
+
+@fixture
+def sampled_2_4_file_path() -> Path:
+    return Path(assets.__file__).parent / "sampled_2_4.csv"
+
+
+@fixture
+def sampled_5_file_path() -> Path:
+    return Path(assets.__file__).parent / "sampled_5.csv"
 
 
 @fixture
@@ -177,11 +187,28 @@ def test_sample(tmpdir, not_padded_file_path, sampled_file_path):
         not_padded_file_path,
         tmpdir / "output.csv",
         "a",
-        [("b", float), ("d", float)],
         2,
     )
 
     assert filecmp.cmp(tmpdir / "output.csv", sampled_file_path)
+
+
+def test_sample_0_1(tmpdir, not_padded_file_path, sampled_0_1_file_path):
+    sample(not_padded_file_path, tmpdir / "output.csv", "a", 2, 0, 16)
+
+    assert filecmp.cmp(tmpdir / "output.csv", sampled_0_1_file_path)
+
+
+def test_sample_2_4(tmpdir, not_padded_file_path, sampled_2_4_file_path):
+    sample(not_padded_file_path, tmpdir / "output.csv", "a", 2, 16, 47)
+
+    assert filecmp.cmp(tmpdir / "output.csv", sampled_2_4_file_path)
+
+
+def test_sample_5(tmpdir, not_padded_file_path, sampled_5_file_path):
+    sample(not_padded_file_path, tmpdir / "output.csv", "a", 2, 47, 59)
+
+    assert filecmp.cmp(tmpdir / "output.csv", sampled_5_file_path)
 
 
 def test_sample_not_float(tmpdir, not_padded_file_path):
@@ -193,33 +220,6 @@ def test_sample_not_float(tmpdir, not_padded_file_path):
             [("b", str), ("d", float)],
             2,
         )
-
-
-def test_sample_bad_x(tmpdir, not_padded_file_path):
-    with pytest.raises(IndexError):
-        sample(
-            not_padded_file_path,
-            tmpdir / "output.csv",
-            "not_existing",
-            [("b", float), ("d", float)],
-            2,
-        )
-
-
-def test_sample_bad_y(tmpdir, not_padded_file_path):
-    with pytest.raises(IndexError):
-        sample(
-            not_padded_file_path,
-            tmpdir / "output.csv",
-            "a",
-            [("b", float), ("not_existing", float)],
-            2,
-        )
-
-
-def test_sample_sampled(tmpdir, sampled_file_path, double_sampled_file_path):
-    sample_sampled(sampled_file_path, tmpdir / "output.csv", 2)
-    assert filecmp.cmp(tmpdir / "output.csv", double_sampled_file_path)
 
 
 def test_sample_sampled_no_x(tmpdir, sampled_no_x_file_path):
@@ -240,21 +240,11 @@ def test_pad_and_sample(
         for index in range(4)
     }
 
-    assert (
-        pad_and_sample(
-            not_padded_file_path, tmp_path, "a", [("b", float), ("d", float)]
-        )
-        == paths
-    )
+    assert pad_and_sample(not_padded_file_path, tmp_path, "a") == paths
 
     assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "0.csv", _0)
     assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "1.csv", _1)
     assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "2.csv", _2)
     assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "3.csv", _3)
 
-    assert (
-        pad_and_sample(
-            not_padded_file_path, tmp_path, "a", [("b", float), ("d", float)]
-        )
-        == paths
-    )
+    assert pad_and_sample(not_padded_file_path, tmp_path, "a") == paths

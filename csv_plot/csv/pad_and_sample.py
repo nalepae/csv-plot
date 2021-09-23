@@ -112,8 +112,9 @@ def sample(
     source_path: Path,
     dest_path: Path,
     x: str,
-    ys_and_types: List[Tuple[str, type]],
     period: int,
+    start_byte: Optional[int] = None,
+    stop_byte: Optional[int] = None,
 ) -> None:
     """Sample a CSV file every `period` line.
 
@@ -127,79 +128,87 @@ def sample(
     5,9,8,7,6
     6,5,7,8,2
 
-    With x == "x", ys_and_types == [("b", float), ("d", float)] and period == 3,
+    With x == "x"
 
     The CSV file written in `dest_path` will be:
-    x,d_min,d_max,b_min,b_max
-    1,5.0,8.0,0.0,7.0
-    4,2.0,6.0,6.0,8.0
+    x,a_min,a_max,b_min,b_max,c_min,c_max,d_min,d_max
+    1,2.0,3.0,0.0,3.0,4.0,7.0,5.0,6.0
+    3,4.0,8.0,0.0,7.0,4.0,7.0,6.0,8.0
+    5,5.0,9.0,7.0,8.0,7.0,8.0,2.0,6.0,
     """
-    ys = {y for y, _ in ys_and_types}
+    real_start_byte = 0 if start_byte is None else start_byte
+    real_stop_byte = source_path.stat().st_size if stop_byte is None else stop_byte
+    amplitude = real_stop_byte - real_start_byte
+    nb_bytes_read = 0
+    line_num = 0
 
     with source_path.open() as source_file, dest_path.open("w") as dest_file:
-        if {type for _, type in ys_and_types} != {float}:
-            raise ValueError(
-                "Only `float` is allowed as a type type for `ys_and_types`"
-            )
+        not_stripped_header_line = next(source_file)
+        header_line = not_stripped_header_line.rstrip()
+        headers = header_line.split(",")
+        index_and_header = list(enumerate(headers))
 
-        reader = csv.DictReader(source_file)
+        x_index, *trash = [index for (index, header) in index_and_header if header == x]
+        y_headers = [header for header in headers if header != x]
 
-        if reader.fieldnames is None or x not in reader.fieldnames:
-            raise IndexError(f"Variable x: {x} not found in CSV file")
+        assert len(trash) == 0, "Multiple `x` in headers"
 
-        if not ys < set(reader.fieldnames):
-            raise IndexError(
-                f"At least on y variable is not available in the input file"
-            )
-
-        writer = csv.DictWriter(
-            dest_file,
-            lineterminator="\n",
-            fieldnames=[x]
-            + [
+        if real_start_byte == 0:
+            dest_headers = [x] + [
                 item
                 for sublist in [
-                    [f"{y}_min", f"{y}_max"] for y in (y for y, _ in ys_and_types)
+                    [f"{header}_min", f"{header}_max"] for header in y_headers
                 ]
                 for item in sublist
-            ],
+            ]
+
+            dest_file.write(f'{",".join(dest_headers)}\n')
+            nb_bytes_read += len(not_stripped_header_line)
+        else:
+            source_file.seek(real_start_byte)
+
+        x_value = ""
+
+        index_to_min_max: Dict[int, Tuple[float, float]] = defaultdict(
+            lambda: (float("inf"), float("-inf"))
         )
 
-        writer.writeheader()
+        while nb_bytes_read < amplitude:
+            not_stripped_line = next(source_file)
+            line = not_stripped_line.rstrip()
+            values = line.split(",")
 
-        x_value = None
-        min_values: Dict[str, float] = defaultdict(lambda: float("inf"))
-        max_values: Dict[str, float] = defaultdict(lambda: float("-inf"))
+            for index, value in enumerate(values):
+                if index != x_index:
+                    min_, max_ = index_to_min_max[index]
 
-        for line_num, line_dict in enumerate(reader):
-            for key, value in line_dict.items():
-                if key != x and key in ys:
-                    min_values[key] = min(min_values[key], float(value))
-                    max_values[key] = max(max_values[key], float(value))
+                    index_to_min_max[index] = (
+                        min(min_, float(value)),
+                        max(max_, float(value)),
+                    )
 
             if line_num % period == 0:
-                x_value = line_dict[x]
+                x_value = values[x_index]
 
             if line_num % period == period - 1:
-                writer.writerow(
-                    {
-                        **{x: x_value},
-                        **{f"{key}_min": value for key, value in min_values.items()},
-                        **{f"{key}_max": value for key, value in max_values.items()},
-                    }
-                )
+                dest_items = [x_value] + [
+                    str(item)
+                    for sublist in index_to_min_max.values()
+                    for item in sublist
+                ]
 
-                min_values = defaultdict(lambda: float("inf"))
-                max_values = defaultdict(lambda: float("-inf"))
+                dest_file.write(f'{",".join(dest_items)}\n')
+                index_to_min_max = defaultdict(lambda: (float("inf"), float("-inf")))
 
-        if line_num % period != period - 1:
-            writer.writerow(
-                {
-                    **{x: x_value},
-                    **{f"{key}_min": value for key, value in min_values.items()},
-                    **{f"{key}_max": value for key, value in max_values.items()},
-                }
-            )
+            line_num += 1
+            nb_bytes_read += len(not_stripped_line)
+
+        if (line_num - 1) % period != period - 1:
+            dest_items = [x_value] + [
+                str(item) for sublist in index_to_min_max.values() for item in sublist
+            ]
+
+            dest_file.write(f'{",".join(dest_items)}\n')
 
 
 def sample_sampled(source_path: Path, dest_path: Path, period: int) -> None:
@@ -270,7 +279,6 @@ def pad_and_sample(
     source_csv_file_path: Path,
     dest_dir_path: Path,
     x: str,
-    ys_and_types: List[Tuple[str, type]],
 ) -> Set[Path]:
     """Pad and sample `source_csv_file_path` into `dest_dir_path` with `x`.
 
@@ -296,7 +304,7 @@ def pad_and_sample(
         nb_lines = len(ptf)
 
     if nb_lines > 1:
-        sample(source_csv_file_path, sampled_path, x, ys_and_types, period=2)
+        sample(source_csv_file_path, sampled_path, x, period=2)
         pad(sampled_path, padded_sampled_path)
 
     with padded_text_file(padded_sampled_path, offset=1) as ptf:

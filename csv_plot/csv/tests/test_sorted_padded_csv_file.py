@@ -14,16 +14,6 @@ def padded_file_path() -> Path:
 
 
 @fixture
-def sampled_padded_file_path() -> Path:
-    return Path(assets.__file__).parent / "sampled_padded.csv"
-
-
-@fixture
-def double_sampled_padded_file_path() -> Path:
-    return Path(assets.__file__).parent / "double_sampled_padded.csv"
-
-
-@fixture
 def padded_file_descriptor_1(padded_file_path: Path) -> IO:
     return padded_file_path.open()
 
