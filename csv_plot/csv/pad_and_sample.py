@@ -67,6 +67,47 @@ def compute_chunks(file_path: Path, nb_chunks: int) -> List[Tuple[int, int]]:
     return list(zip(new_lines_byte_index[:-1], new_lines_byte_index[1:]))
 
 
+def pad(
+    input_path: Path,
+    output_path: Path,
+    start_byte: Optional[int] = None,
+    stop_byte: Optional[int] = None,
+) -> None:
+    """Pad the text file (in place) pointed by `input_path` with white spaces.
+
+    input_path: The path of the input file
+    output_path: The path of the output file. If not provided, will replace the input
+                 file
+    """
+    real_start_byte = 0 if start_byte is None else start_byte
+    real_stop_byte = input_path.stat().st_size if stop_byte is None else stop_byte
+    amplitude = real_stop_byte - real_start_byte
+
+    nb_bytes_read = 0
+    max_line_lenght = 0
+
+    with input_path.open() as lines:
+        lines.seek(real_start_byte)
+
+        while nb_bytes_read < amplitude:
+            line = next(lines)
+            line_length = len(line.rstrip(os.linesep))
+            max_line_lenght = max(line_length, max_line_lenght)
+            nb_bytes_read += len(line)
+
+    nb_bytes_read = 0
+
+    with input_path.open() as source_lines, output_path.open("w") as dest_file:
+        source_lines.seek(real_start_byte)
+
+        while nb_bytes_read < amplitude:
+            source_line = next(source_lines)
+            stripped_source_line = source_line.rstrip()
+            padding = max_line_lenght - len(stripped_source_line)
+            dest_file.write(f"{stripped_source_line}{' '*padding}\n")
+            nb_bytes_read += len(source_line)
+
+
 def sample(
     source_path: Path,
     dest_path: Path,
@@ -223,47 +264,6 @@ def sample_sampled(source_path: Path, dest_path: Path, period: int) -> None:
 
         if line_num % period != period - 1:
             writer.writerow({**{x: x_value}, **min_values, **max_values})
-
-
-def pad(
-    input_path: Path,
-    output_path: Path,
-    start_byte: Optional[int] = None,
-    stop_byte: Optional[int] = None,
-) -> None:
-    """Pad the text file (in place) pointed by `input_path` with white spaces.
-
-    input_path: The path of the input file
-    output_path: The path of the output file. If not provided, will replace the input
-                 file
-    """
-    real_start_byte = 0 if start_byte is None else start_byte
-    real_stop_byte = input_path.stat().st_size if stop_byte is None else stop_byte
-    amplitude = real_stop_byte - real_start_byte
-
-    nb_bytes_read = 0
-    max_line_lenght = 0
-
-    with input_path.open() as lines:
-        lines.seek(real_start_byte)
-
-        while nb_bytes_read < amplitude:
-            line = next(lines)
-            line_length = len(line.rstrip(os.linesep))
-            max_line_lenght = max(line_length, max_line_lenght)
-            nb_bytes_read += len(line)
-
-    nb_bytes_read = 0
-
-    with input_path.open() as source_lines, output_path.open("w") as dest_file:
-        source_lines.seek(real_start_byte)
-
-        while nb_bytes_read < amplitude:
-            source_line = next(source_lines)
-            stripped_source_line = source_line.rstrip()
-            padding = max_line_lenght - len(stripped_source_line)
-            dest_file.write(f"{stripped_source_line}{' '*padding}\n")
-            nb_bytes_read += len(source_line)
 
 
 def pad_and_sample(
