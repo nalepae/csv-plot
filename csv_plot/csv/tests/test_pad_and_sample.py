@@ -2,16 +2,15 @@ import filecmp
 import os
 from pathlib import Path
 
-import pytest
 from pytest import fixture
 
 from ..pad_and_sample import (
+    are_files_fully_sampled,
     compute_chunks,
     pad,
     pad_and_sample,
     pseudo_hash,
     sample,
-    sample_sampled,
 )
 from ..tests import assets
 
@@ -86,6 +85,16 @@ def _2(hashed: Path):
 @fixture
 def _3(hashed: Path):
     return hashed / "3.csv"
+
+
+@fixture
+def splitted_padded_csv_path() -> Path:
+    return Path(assets.__file__).parent / "splitted_padded_csv"
+
+
+@fixture
+def fully_splitted_padded_csv_path() -> Path:
+    return Path(assets.__file__).parent / "fully_splitted_padded_csv"
 
 
 def test_pad(tmpdir, not_padded_file_path, padded_file_path):
@@ -170,6 +179,13 @@ def test_compute_chunks_padded(padded_file_path: Path):
         (48, 60),
         (60, 72),
     ]
+
+
+def test_are_files_fully_sampled(
+    splitted_padded_csv_path: Path, fully_splitted_padded_csv_path: Path
+):
+    assert not are_files_fully_sampled(splitted_padded_csv_path)
+    assert are_files_fully_sampled(fully_splitted_padded_csv_path)
 
 
 def test_sample(tmpdir, not_padded_file_path, sampled_file_path):

@@ -67,6 +67,25 @@ def compute_chunks(file_path: Path, nb_chunks: int) -> List[Tuple[int, int]]:
     return list(zip(new_lines_byte_index[:-1], new_lines_byte_index[1:]))
 
 
+def are_files_fully_sampled(dir_path: Path) -> bool:
+    paths = sorted(dir_path.glob("*.csv"), key=lambda item: int(item.stem))
+
+    for index, path in enumerate(paths):
+        with path.open() as lines:
+            if index == 0:
+                next(lines)
+
+            next(lines)
+
+            try:
+                next(lines)
+                return False
+            except StopIteration:
+                pass
+
+    return True
+
+
 def pad(
     input_path: Path,
     output_path: Path,
