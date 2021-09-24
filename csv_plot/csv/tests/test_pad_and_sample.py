@@ -56,34 +56,34 @@ def sampled_5_file_path() -> Path:
 
 
 @fixture
-def not_padded_file_path():
+def not_padded_file_path() -> Path:
     path = Path(assets.__file__).parent / "not_padded.csv"
     os.utime(path, (42, 42))
     return path
 
 
 @fixture
-def hashed():
+def hashed() -> Path:
     return Path(assets.__file__).parent / "8bed00c4529bfd12bd70678a71eaf5af"
 
 
 @fixture
-def _0(hashed: Path):
+def _0(hashed: Path) -> Path:
     return hashed / "0.csv"
 
 
 @fixture
-def _1(hashed: Path):
+def _1(hashed: Path) -> Path:
     return hashed / "1.csv"
 
 
 @fixture
-def _2(hashed: Path):
+def _2(hashed: Path) -> Path:
     return hashed / "2.csv"
 
 
 @fixture
-def _3(hashed: Path):
+def _3(hashed: Path) -> Path:
     return hashed / "3.csv"
 
 
