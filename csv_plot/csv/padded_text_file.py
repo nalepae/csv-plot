@@ -216,8 +216,5 @@ def padded_text_file(path: Path, offset: int = 0) -> Iterator[PaddedTextFile]:
                 If possible, use ptf.get(start=a, stop=b) instead of ptf[a, b]
         ptf[2:-1]
     """
-    try:
-        with path.open() as file_descriptor:
-            yield PaddedTextFile(file_descriptor, path.stat().st_size, offset)
-    finally:
-        pass
+    with path.open() as file_descriptor:
+        yield PaddedTextFile(file_descriptor, path.stat().st_size, offset)

@@ -219,10 +219,7 @@ def padded_csv_file(
         #                           pcf[a, b]
         pcf[2:-1] # = [[12, 10], [16, 14]]
     """
-    try:
-        with path.open() as file_descriptor:
-            yield _PaddedCSVFile(
-                [(file_descriptor, path.stat().st_size)], columns_and_types
-            )
-    finally:
-        pass
+    with path.open() as file_descriptor:
+        yield _PaddedCSVFile(
+            [(file_descriptor, path.stat().st_size)], columns_and_types
+        )
