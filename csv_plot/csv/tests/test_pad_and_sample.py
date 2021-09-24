@@ -57,16 +57,6 @@ def sampled_5_file_path() -> Path:
 
 
 @fixture
-def sampled_no_x_file_path() -> Path:
-    return Path(assets.__file__).parent / "sampled_no_x.csv"
-
-
-@fixture
-def sampled_multiple_x_file_path() -> Path:
-    return Path(assets.__file__).parent / "sampled_multiple_x.csv"
-
-
-@fixture
 def not_padded_file_path():
     path = Path(assets.__file__).parent / "not_padded.csv"
     os.utime(path, (42, 42))
@@ -209,27 +199,6 @@ def test_sample_5(tmpdir, not_padded_file_path, sampled_5_file_path):
     sample(not_padded_file_path, tmpdir / "output.csv", "a", 2, 47, 59)
 
     assert filecmp.cmp(tmpdir / "output.csv", sampled_5_file_path)
-
-
-def test_sample_not_float(tmpdir, not_padded_file_path):
-    with pytest.raises(ValueError):
-        sample(
-            not_padded_file_path,
-            tmpdir / "output.csv",
-            "a",
-            [("b", str), ("d", float)],
-            2,
-        )
-
-
-def test_sample_sampled_no_x(tmpdir, sampled_no_x_file_path):
-    with pytest.raises(ValueError):
-        sample_sampled(sampled_no_x_file_path, tmpdir / "output.csv", 2)
-
-
-def test_sample_sampled_multiple_x(tmpdir, sampled_multiple_x_file_path):
-    with pytest.raises(ValueError):
-        sample_sampled(sampled_multiple_x_file_path, tmpdir / "output.csv", 2)
 
 
 def test_pad_and_sample(

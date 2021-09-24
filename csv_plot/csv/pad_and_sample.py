@@ -211,7 +211,9 @@ def sample(
             dest_file.write(f'{",".join(dest_items)}\n')
 
 
-def sample_sampled(source_path: Path, dest_path: Path, period: int) -> None:
+def sample_sampled(
+    source_path: Path, dest_path: Path, period: int, has_header: bool
+) -> None:
     """Sample an already sampled CSV file every `period` line.
 
     Example:
@@ -229,50 +231,51 @@ def sample_sampled(source_path: Path, dest_path: Path, period: int) -> None:
     17,18.0,18.0,20.0,20.0
     """
     with source_path.open() as source_file, dest_path.open("w") as dest_file:
-        reader = csv.DictReader(source_file)
+        line = next(source_file)
+        str_values = line.split(",")
+        _, *y_values = str_values
+        nb_y_values = len(y_values)
+        assert nb_y_values % 2 == 0
 
-        assert reader.fieldnames
+        if has_header:
+            dest_file.write(line)
+        else:
+            source_file.seek(0)
 
-        field_names = reader.fieldnames
+        x_value = ""
 
-        xs = [
-            item
-            for item in field_names
-            if not (item.endswith("_min") or item.endswith("_max"))
+        values = [
+            float("inf") if index % 2 == 0 else float("-inf")
+            for index in range(nb_y_values)
         ]
 
-        if len(xs) == 0:
-            raise ValueError("No X found in source file")
+        for line_num, line_not_stripped in enumerate(source_file):
+            line = line_not_stripped.rstrip()
+            str_values = line.split(",")
+            x_value_temp, *y_values = str_values
 
-        x, *trash = xs
-
-        if trash:
-            raise ValueError("Several Xs found in source file")
-
-        writer = csv.DictWriter(dest_file, lineterminator="\n", fieldnames=field_names)
-        writer.writeheader()
-
-        x_value = None
-        min_values: Dict[str, float] = defaultdict(lambda: float("inf"))
-        max_values: Dict[str, float] = defaultdict(lambda: float("-inf"))
-
-        for line_num, line_dict in enumerate(reader):
-            for key, value in line_dict.items():
-                if key.endswith("_min"):
-                    min_values[key] = min(min_values[key], float(value))
-                elif key.endswith("_max"):
-                    max_values[key] = max(max_values[key], float(value))
+            for index, value in enumerate(y_values):
+                values[index] = (
+                    min(float(value), values[index])
+                    if index % 2 == 0
+                    else max(float(value), values[index])
+                )
 
             if line_num % period == 0:
-                x_value = line_dict[x]
+                x_value = x_value_temp
 
             if line_num % period == period - 1:
-                writer.writerow({**{x: x_value}, **min_values, **max_values})
-                min_values = defaultdict(lambda: float("inf"))
-                max_values = defaultdict(lambda: float("-inf"))
+                dest_items = [x_value] + [str(value) for value in values]
+                dest_file.write(f'{",".join(dest_items)}\n')
+
+                values = [
+                    float("inf") if index % 2 == 0 else float("-inf")
+                    for index in range(nb_y_values)
+                ]
 
         if line_num % period != period - 1:
-            writer.writerow({**{x: x_value}, **min_values, **max_values})
+            dest_items = [x_value] + [str(value) for value in values]
+            dest_file.write(f'{",".join(dest_items)}\n')
 
 
 def pad_and_sample(
@@ -316,7 +319,7 @@ def pad_and_sample(
         new_sampled_path = dir_path / f"{epoch}_sampled.csv"
         new_padded_sampled_path = dir_path / f"{epoch}.csv"
 
-        sample_sampled(sampled_path, new_sampled_path, period=2)
+        sample_sampled(sampled_path, new_sampled_path, period=2, has_header=True)
         pad(new_sampled_path, new_padded_sampled_path)
 
         with padded_text_file(new_padded_sampled_path, offset=1) as ptf:
