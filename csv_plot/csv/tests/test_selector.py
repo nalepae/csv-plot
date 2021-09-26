@@ -13,7 +13,7 @@ def hashed_dir() -> Path:
 
 
 def test_selector(hashed_dir):
-    with selector(hashed_dir, ("a", int), [("b", float), ("d", float)]) as sel:
+    with selector(hashed_dir, ("a", int), ["b", "d"]) as sel:
         with pytest.raises(ValueError):
             sel[::]
 
@@ -58,10 +58,10 @@ def test_selector(hashed_dir):
         )
 
         assert sel[::3] == Selected(
-            xs=[1, 9, 17],
+            xs=[1, 9, 13],
             name_to_y={
-                "b": Selected.Y(mins=[2, 10, 18], maxs=[6, 14, 18]),
-                "d": Selected.Y(mins=[4, 12, 20], maxs=[8, 16, 20]),
+                "b": Selected.Y(mins=[2, 10, 14], maxs=[6, 10, 18]),
+                "d": Selected.Y(mins=[4, 12, 16], maxs=[8, 12, 20]),
             },
         )
 
@@ -71,8 +71,8 @@ def test_selector(hashed_dir):
             == Selected(
                 xs=[1, 9],
                 name_to_y={
-                    "b": Selected.Y(mins=[2, 10], maxs=[6, 14]),
-                    "d": Selected.Y(mins=[4, 12], maxs=[8, 16]),
+                    "b": Selected.Y(mins=[2, 10], maxs=[6, 10]),
+                    "d": Selected.Y(mins=[4, 12], maxs=[8, 12]),
                 },
             )
         )

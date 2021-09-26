@@ -65,7 +65,7 @@ class _SortedPaddedCSVFile(Gettable):
         self,
         files_descriptors_and_size: List[Tuple[IO, IO, int]],
         x_and_type: Tuple[str, type],
-        ys_and_types: List[Tuple[str, type]],
+        ys: List[str],
     ) -> None:
         """Constructor.
 
@@ -102,7 +102,9 @@ class _SortedPaddedCSVFile(Gettable):
             files_descriptor_1_and_size, [x_and_type], unwrap_if_one_column=True
         )
 
-        self.__ys_file = _PaddedCSVFile(files_descriptor_2_and_size, ys_and_types)
+        self.__ys_file = _PaddedCSVFile(
+            files_descriptor_2_and_size, [(y, float) for y in ys]
+        )
 
     def __get_line_number_of(self, x: Any, side: Side) -> int:
         return {Side.Left: bisect_left, Side.Right: bisect_right}[side](
@@ -194,7 +196,7 @@ class _SortedPaddedCSVFile(Gettable):
 def sorted_padded_csv_file(
     path: Path,
     x_and_type: Tuple[str, type],
-    ys_and_types: List[Tuple[str, type]],
+    ys: List[str],
 ) -> Iterator[_SortedPaddedCSVFile]:
     """Represent a padded CSV file with one sorted column, where all lines are reachable
     through the sorted column with O(log(n)) complexity.
@@ -246,7 +248,7 @@ def sorted_padded_csv_file(
             yield _SortedPaddedCSVFile(
                 [(file_descriptor_1, file_descriptor_2, path.stat().st_size)],
                 x_and_type,
-                ys_and_types,
+                ys,
             )
     else:
         paths = sorted(path.glob("*.csv"), key=lambda item: int(item.stem))
@@ -261,6 +263,4 @@ def sorted_padded_csv_file(
                 for path in paths
             ]
 
-            yield _SortedPaddedCSVFile(
-                files_descriptors_and_size, x_and_type, ys_and_types  # type: ignore
-            )
+            yield _SortedPaddedCSVFile(files_descriptors_and_size, x_and_type, ys)  # type: ignore

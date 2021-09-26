@@ -70,22 +70,17 @@ def hashed() -> Path:
 
 @fixture
 def _0(hashed: Path) -> Path:
-    return hashed / "0.csv"
+    return hashed / "0"
 
 
 @fixture
 def _1(hashed: Path) -> Path:
-    return hashed / "1.csv"
+    return hashed / "1"
 
 
 @fixture
 def _2(hashed: Path) -> Path:
-    return hashed / "2.csv"
-
-
-@fixture
-def _3(hashed: Path) -> Path:
-    return hashed / "3.csv"
+    return hashed / "2"
 
 
 @fixture
@@ -99,22 +94,22 @@ def fully_splitted_padded_csv_path() -> Path:
 
 
 def test_pad(tmpdir, not_padded_file_path, padded_file_path):
-    pad(not_padded_file_path, tmpdir / "padded.csv")
+    pad(not_padded_file_path, Path(tmpdir) / "padded.csv")
     assert filecmp.cmp(tmpdir / "padded.csv", padded_file_path)
 
 
 def test_pad_0_1(tmpdir, not_padded_file_path, padded_0_1_file_path):
-    pad(not_padded_file_path, tmpdir / "padded.csv", 0, 16)
+    pad(not_padded_file_path, Path(tmpdir) / "padded.csv", 0, 16)
     assert filecmp.cmp(tmpdir / "padded.csv", padded_0_1_file_path)
 
 
 def test_pad_2_4(tmpdir, not_padded_file_path, padded_2_4_file_path):
-    pad(not_padded_file_path, tmpdir / "padded.csv", 16, 47)
+    pad(not_padded_file_path, Path(tmpdir) / "padded.csv", 16, 47)
     assert filecmp.cmp(tmpdir / "padded.csv", padded_2_4_file_path)
 
 
 def test_pad_5(tmpdir, not_padded_file_path, padded_5_file_path):
-    pad(not_padded_file_path, tmpdir / "padded.csv", 47, 59)
+    pad(not_padded_file_path, Path(tmpdir) / "padded.csv", 47, 59)
     assert filecmp.cmp(tmpdir / "padded.csv", padded_5_file_path)
 
 
@@ -219,30 +214,44 @@ def test_sample_5(tmpdir, not_padded_file_path, sampled_5_file_path):
 
 
 def test_sample_sampled_full_header(tmpdir, sampled_0_1_file_path):
-    sample_sampled(sampled_0_1_file_path, tmpdir / "output.csv", 2, True)
+    sample_sampled(sampled_0_1_file_path, Path(tmpdir) / "output.csv", 2, True)
 
     assert filecmp.cmp(tmpdir / "output.csv", sampled_0_1_file_path)
 
 
 def test_sample_sampled_full_no_header(tmpdir, sampled_5_file_path):
-    sample_sampled(sampled_5_file_path, tmpdir / "output.csv", 2, False)
+    sample_sampled(sampled_5_file_path, Path(tmpdir) / "output.csv", 2, False)
 
     assert filecmp.cmp(tmpdir / "output.csv", sampled_5_file_path)
 
 
 def test_pad_and_sample(
-    tmp_path: Path, not_padded_file_path: Path, _0: Path, _1: Path, _2: Path, _3: Path
+    tmp_path: Path, not_padded_file_path: Path, _0: Path, _1: Path, _2: Path
 ):
-    paths = {
-        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / f"{index}.csv"
-        for index in range(4)
-    }
+    assert pad_and_sample(not_padded_file_path, tmp_path, "a", 2)
 
-    assert pad_and_sample(not_padded_file_path, tmp_path, "a") == paths
+    assert filecmp.cmp(
+        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "0" / "0.csv", _0 / "0.csv"
+    )
 
-    assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "0.csv", _0)
-    assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "1.csv", _1)
-    assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "2.csv", _2)
-    assert filecmp.cmp(tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "3.csv", _3)
+    assert filecmp.cmp(
+        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "0" / "1.csv", _0 / "1.csv"
+    )
 
-    assert pad_and_sample(not_padded_file_path, tmp_path, "a") == paths
+    assert filecmp.cmp(
+        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "1" / "0.csv", _1 / "0.csv"
+    )
+
+    assert filecmp.cmp(
+        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "1" / "1.csv", _1 / "1.csv"
+    )
+
+    assert filecmp.cmp(
+        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "2" / "0.csv", _2 / "0.csv"
+    )
+
+    assert filecmp.cmp(
+        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "2" / "1.csv", _2 / "1.csv"
+    )
+
+    assert not pad_and_sample(not_padded_file_path, tmp_path, "a", 2)

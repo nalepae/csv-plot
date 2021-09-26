@@ -1,7 +1,7 @@
 import json
 from csv import DictReader
 from datetime import datetime
-from multiprocessing import Pipe
+from multiprocessing import Pipe, cpu_count
 from pathlib import Path
 from threading import Thread
 from typing import Dict, Iterator, List, Optional, Tuple
@@ -273,7 +273,7 @@ def main(
     ys = columns - {x}
 
     secho("Process CSV file... ", fg=colors.BRIGHT_GREEN, bold=True, nl=False)
-    pad_and_sample(csv_path, FILES_DIR, x, [(y, float) for y in ys])
+    pad_and_sample(csv_path, FILES_DIR, x, cpu_count())
     secho("OK", fg=colors.BRIGHT_GREEN, bold=True)
 
     win = GraphicsLayoutWidget(show=True, title=f"🌊 CSV PLOT 🏄")

@@ -1,5 +1,6 @@
 from contextlib import ExitStack, contextmanager
 from datetime import datetime
+from glob import glob
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Set, Tuple, Union
 
@@ -117,9 +118,9 @@ class _Selector:
     def __init__(
         self,
         spcf: _SortedPaddedCSVFile,
-        ys_and_types: List[Tuple[str, type]],
+        ys: List[str],
         sampled_spcfs: Set[_SortedPaddedCSVFile],
-        sampled_ys_and_types: List[Tuple[str, type]],
+        sampled_ys: List[str],
     ) -> None:
         """Initializer:
 
@@ -136,8 +137,8 @@ class _Selector:
         self.__sampled_spcfs = sampled_spcfs
         self.__all_spcfs = self.__sampled_spcfs.union({self.__spcf})
 
-        self.__y_names = [name for name, _ in ys_and_types]
-        self.__sampled_y_names = [name for name, _ in sampled_ys_and_types]
+        self.__y_names = ys
+        self.__sampled_y_names = sampled_ys
 
     def __get_nb_lines_between(
         self, start: Any, stop: Any
@@ -207,7 +208,7 @@ class _Selector:
 def selector(
     dir_path: Path,
     x_and_type: Tuple[str, type],
-    ys_and_types: List[Tuple[str, type]],
+    ys: List[str],
 ) -> Iterator[_Selector]:
     """Select the sampled file matching as close as possible a given resolution.
 
@@ -215,7 +216,7 @@ def selector(
                  Non sampled path name's HAS to be `0.csv`
 
     x_and_type : Name and the type of X value
-    ys_and_type: Names and Y types
+    ys: ys name
 
     Usage:
     ======
@@ -254,7 +255,7 @@ def selector(
     |- 2.csv
     |- 3.csv
 
-    with selector(dir_path, ("a", int), [("b", float), ("d", float)]) as sel:
+    with selector(dir_path, ("a", int), ["b", "d"]) as sel:
         sel[::100] == Selected(
                     xs=[1, 5, 9, 13, 17],
                     name_to_y={
@@ -307,31 +308,22 @@ def selector(
                     )
 
     """
-    name = "0.csv"
-    paths = list(dir_path.glob("*.csv"))
-    path, *trash = [path for path in paths if path.name == name]
-    sampled_paths = [path for path in paths if path.name != name]
+    sampled_paths = [path for path in dir_path.iterdir() if path.name != "0"]
 
-    assert trash == []
-
-    sampled_ys_and_types = [
-        item
-        for sublist in [
-            [(f"{y}_min", type), (f"{y}_max", type)] for y, type in ys_and_types
-        ]
-        for item in sublist
+    sampled_ys = [
+        item for sublist in [[f"{y}_min", f"{y}_max"] for y in ys] for item in sublist
     ]
 
     with ExitStack() as stack:
         spcf = stack.enter_context(
-            sorted_padded_csv_file(path, x_and_type, ys_and_types)
+            sorted_padded_csv_file(dir_path / "0", x_and_type, ys)
         )
 
         sampled_spcfs = {
             stack.enter_context(
-                sorted_padded_csv_file(sampled_path, x_and_type, sampled_ys_and_types)
+                sorted_padded_csv_file(sampled_path, x_and_type, sampled_ys)
             )
             for sampled_path in sampled_paths
         }
 
-        yield _Selector(spcf, ys_and_types, sampled_spcfs, sampled_ys_and_types)
+        yield _Selector(spcf, ys, sampled_spcfs, sampled_ys)

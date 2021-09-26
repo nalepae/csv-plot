@@ -74,11 +74,7 @@ class BackgroundProcessor(Process):
         self.__connection = connection
 
     def run(self) -> None:
-        with selector(
-            self.__dir_path,
-            self.__x_and_type,
-            [(y, float) for y in self.__ys],
-        ) as sel:
+        with selector(self.__dir_path, self.__x_and_type, self.__ys) as sel:
             _, x_type = self.__x_and_type
 
             while True:

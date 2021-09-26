@@ -39,7 +39,7 @@ def test_len(
     sorted_padded_csv_file = _SortedPaddedCSVFile(
         [(padded_file_descriptor_1, padded_file_descriptor_2, padded_file_size)],
         ("c", int),
-        [("d", int), ("b", int)],
+        ["d", "b"],
     )
 
     assert len(sorted_padded_csv_file) == 5
@@ -51,7 +51,7 @@ def test_line(
     sorted_padded_csv_file = _SortedPaddedCSVFile(
         [(padded_file_descriptor_1, padded_file_descriptor_2, padded_file_size)],
         ("c", int),
-        [("d", int), ("b", int)],
+        ["d", "b"],
     )
 
     assert sorted_padded_csv_file[7] == (7, [8, 6])
@@ -66,7 +66,7 @@ def test_slice(
     sorted_padded_csv_file = _SortedPaddedCSVFile(
         [(padded_file_descriptor_1, padded_file_descriptor_2, padded_file_size)],
         ("c", int),
-        [("d", int), ("b", int)],
+        ["d", "b"],
     )
 
     assert (
@@ -120,7 +120,7 @@ def test_number_of_lines_between(
     sorted_padded_csv_file = _SortedPaddedCSVFile(
         [(padded_file_descriptor_1, padded_file_descriptor_2, padded_file_size)],
         ("c", int),
-        [("d", int), ("b", int)],
+        ["d", "b"],
     )
 
     assert sorted_padded_csv_file.number_of_lines_between() == 5
@@ -154,7 +154,7 @@ def test_sorted_padded_csv_file(padded_file_path):
     with sorted_padded_csv_file(
         padded_file_path,
         ("c", int),
-        [("d", int), ("b", int)],
+        ["d", "b"],
     ) as spcf:
         assert (
             spcf[15:19]
@@ -166,9 +166,7 @@ def test_sorted_padded_csv_file(padded_file_path):
 
 
 def test_splitted_sorted_padded_csv_file(splitted_padded_csv):
-    with sorted_padded_csv_file(
-        splitted_padded_csv, ("c", int), [("d", int), ("b", int)]
-    ) as spcf:
+    with sorted_padded_csv_file(splitted_padded_csv, ("c", int), ["d", "b"]) as spcf:
         assert (
             spcf[6.5:]
             == spcf[7:]

@@ -1,5 +1,5 @@
-import csv
 import hashlib
+from multiprocessing import Pool, cpu_count
 import os
 from collections import defaultdict
 from pathlib import Path
@@ -98,6 +98,8 @@ def pad(
     output_path: The path of the output file. If not provided, will replace the input
                  file
     """
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
     real_start_byte = 0 if start_byte is None else start_byte
     real_stop_byte = input_path.stat().st_size if stop_byte is None else stop_byte
     amplitude = real_stop_byte - real_start_byte
@@ -155,9 +157,18 @@ def sample(
     3,4.0,8.0,0.0,7.0,4.0,7.0,6.0,8.0
     5,5.0,9.0,7.0,8.0,7.0,8.0,2.0,6.0,
     """
+
+    def has_to_be_excluded(value: str) -> bool:
+        try:
+            float(value)
+            return False
+        except:
+            return True
+
     real_start_byte = 0 if start_byte is None else start_byte
     real_stop_byte = source_path.stat().st_size if stop_byte is None else stop_byte
     amplitude = real_stop_byte - real_start_byte
+
     nb_bytes_read = 0
     line_num = 0
 
@@ -165,12 +176,27 @@ def sample(
         not_stripped_header_line = next(source_file)
         header_line = not_stripped_header_line.rstrip()
         headers = header_line.split(",")
-        index_and_header = list(enumerate(headers))
+        index_to_header = {index: header for index, header in enumerate(headers)}
 
-        x_index, *trash = [index for (index, header) in index_and_header if header == x]
-        y_headers = [header for header in headers if header != x]
+        x_index, *trash = [
+            index for (index, header) in index_to_header.items() if header == x
+        ]
 
         assert len(trash) == 0, "Multiple `x` in headers"
+
+        first_line = next(source_file)
+        first_line_values = first_line.split(",")
+
+        y_indexes = {
+            index
+            for index, value in enumerate(first_line_values)
+            if index != x_index and not has_to_be_excluded(value)
+        }
+
+        y_headers = [index_to_header[y_index] for y_index in y_indexes]
+
+        source_file.seek(0)
+        next(source_file)
 
         if real_start_byte == 0:
             dest_headers = [x] + [
@@ -198,7 +224,7 @@ def sample(
             values = line.split(",")
 
             for index, value in enumerate(values):
-                if index != x_index:
+                if index in y_indexes:
                     min_, max_ = index_to_min_max[index]
 
                     index_to_min_max[index] = (
@@ -249,6 +275,8 @@ def sample_sampled(
     1,2.0,14.0,4.0,16.0
     17,18.0,18.0,20.0,20.0
     """
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+
     with source_path.open() as source_file, dest_path.open("w") as dest_file:
         line = next(source_file)
         str_values = line.split(",")
@@ -297,60 +325,104 @@ def sample_sampled(
             dest_file.write(f'{",".join(dest_items)}\n')
 
 
+def pad_to_the_end(nb_workers: int, global_dir: Path, index: int) -> None:
+    current_sampled_dir = global_dir / f"{index}_sampled"
+
+    if not current_sampled_dir.exists():
+        return
+
+    padded_dir = global_dir / f"{index}"
+    sampled_paths = list(current_sampled_dir.glob("*.csv"))
+    padded_paths = [padded_dir / sampled_path.name for sampled_path in sampled_paths]
+    arguments = list(zip(sampled_paths, padded_paths))
+
+    with Pool(nb_workers) as pool:
+        pool.starmap(pad, arguments)
+
+    for sampled_path in sampled_paths:
+        sampled_path.unlink()
+
+    current_sampled_dir.rmdir()
+    pad_to_the_end(nb_workers, global_dir, index + 1)
+
+
+def sample_sampled_to_the_end(
+    nb_workers: int, sampled_global_dir: Path, index: int
+) -> None:
+    current_sampled_dir = sampled_global_dir / f"{index}_sampled"
+
+    if are_files_fully_sampled(current_sampled_dir):
+        return
+
+    next_sampled_dir = sampled_global_dir / f"{(index + 1)}_sampled"
+    current_sampled_paths = list(current_sampled_dir.glob("*.csv"))
+
+    next_sampled_paths = [
+        next_sampled_dir / current_sampled_path.name
+        for current_sampled_path in current_sampled_paths
+    ]
+
+    arguments = [
+        (current_sampled_path, next_sampled_path, 2, index == 0)
+        for index, (current_sampled_path, next_sampled_path) in enumerate(
+            zip(current_sampled_paths, next_sampled_paths)
+        )
+    ]
+
+    with Pool(nb_workers) as pool:
+        pool.starmap(sample_sampled, arguments)
+
+    sample_sampled_to_the_end(nb_workers, sampled_global_dir, index + 1)
+
+
 def pad_and_sample(
-    source_csv_file_path: Path,
-    dest_dir_path: Path,
-    x: str,
-) -> Set[Path]:
+    source_csv_file_path: Path, dest_dir_path: Path, x: str, nb_workers: int
+) -> bool:
     """Pad and sample `source_csv_file_path` into `dest_dir_path` with `x`.
 
     If the file is already sampled, this function does not resample it but exits
     immediately without error.
     """
-    # TODO: I'm not very proud of this implementation. Please do something cleaner!
 
     dir_path = dest_dir_path / pseudo_hash(source_csv_file_path, x)
 
     try:
         dir_path.mkdir(parents=True)
     except FileExistsError:
-        return set(dir_path.glob("*.csv"))
+        return False
 
-    padded_path = dir_path / "0.csv"
-    sampled_path = dir_path / "1_sampled.csv"
-    padded_sampled_path = dir_path / "1.csv"
+    padded_path = dir_path / "0"
+    padded_path.mkdir(parents=True)
 
-    pad(source_csv_file_path, padded_path)
+    sampled_path_1 = dir_path / "1_sampled"
+    sampled_path_1.mkdir(parents=True)
 
-    with padded_text_file(padded_path, offset=1) as ptf:
-        nb_lines = len(ptf)
+    chunks = compute_chunks(source_csv_file_path, nb_workers)
 
-    if nb_lines > 1:
-        sample(source_csv_file_path, sampled_path, x, period=2)
-        pad(sampled_path, padded_sampled_path)
+    arguments_pad = [
+        (source_csv_file_path, padded_path / f"{index}.csv", start_byte, stop_byte)
+        for index, (start_byte, stop_byte) in enumerate(chunks)
+    ]
 
-    with padded_text_file(padded_sampled_path, offset=1) as ptf:
-        nb_lines = len(ptf)
+    with Pool(nb_workers) as pool:
+        pool.starmap(pad, arguments_pad)
 
-    epoch = 2
+    arguments_sample = [
+        (
+            source_csv_file_path,
+            sampled_path_1 / f"{index}.csv",
+            x,
+            2,
+            start_byte,
+            stop_byte,
+        )
+        for index, (start_byte, stop_byte) in enumerate(chunks)
+    ]
 
-    while nb_lines > 1:
-        new_sampled_path = dir_path / f"{epoch}_sampled.csv"
-        new_padded_sampled_path = dir_path / f"{epoch}.csv"
+    with Pool(nb_workers) as pool:
+        pool.starmap(sample, arguments_sample)
 
-        sample_sampled(sampled_path, new_sampled_path, period=2, has_header=True)
-        pad(new_sampled_path, new_padded_sampled_path)
+    sample_sampled_to_the_end(nb_workers, dir_path, 1)
+    pad_to_the_end(nb_workers, dir_path, 1)
 
-        with padded_text_file(new_padded_sampled_path, offset=1) as ptf:
-            nb_lines = len(ptf)
-
-        epoch += 1
-
-        sampled_path = new_sampled_path
-
-    sampled_paths = dir_path.glob("*_sampled.csv")
-
-    for path in sampled_paths:
-        path.unlink(missing_ok=True)
-
-    return set(dir_path.glob("*.csv"))
+    return True
