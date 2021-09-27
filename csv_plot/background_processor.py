@@ -113,10 +113,10 @@ class BackgroundProcessor(Process):
 
                     start, stop = (
                         (
-                            datetime.fromtimestamp(stop_float),
                             datetime.fromtimestamp(start_float),
+                            datetime.fromtimestamp(stop_float),
                         )
-                        if x_type == datetime
+                        if x_type is not float
                         else (start_float, stop_float)
                     )
 
