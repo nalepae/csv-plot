@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -10,6 +11,11 @@ from . import assets
 @fixture
 def hashed_dir() -> Path:
     return Path(assets.__file__).parent / "8bed00c4529bfd12bd70678a71eaf5af"
+
+
+@fixture
+def hashed_dir_datetime() -> Path:
+    return Path(assets.__file__).parent / "8e473f7e2ae6e79501a25895afe3756e"
 
 
 def test_selector(hashed_dir):
@@ -75,4 +81,76 @@ def test_selector(hashed_dir):
                     "d": Selected.Y(mins=[4, 12], maxs=[8, 12]),
                 },
             )
+        )
+
+
+def test_selector_datetime(hashed_dir_datetime):
+    parser = lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f+00")
+
+    with selector(hashed_dir_datetime, ("time", parser), ["price", "size"]) as sel:
+        with pytest.raises(ValueError):
+            sel[::]
+
+        assert sel[::100] == Selected(
+            xs=[
+                datetime(2019, 8, 15, 16, 3, 6, 595000),
+                datetime(2019, 8, 15, 16, 3, 6, 595000),
+                datetime(2019, 8, 15, 16, 3, 6, 595000),
+                datetime(2019, 8, 15, 16, 3, 6, 595000),
+                datetime(2019, 8, 15, 16, 3, 6, 595000),
+                datetime(2019, 8, 15, 16, 3, 18, 894000),
+                datetime(2019, 8, 15, 16, 3, 18, 894000),
+                datetime(2019, 8, 15, 16, 3, 21, 279000),
+                datetime(2019, 8, 15, 16, 3, 21, 554000),
+            ],
+            name_to_y={
+                "price": Selected.Y(
+                    mins=[
+                        0.7597,
+                        0.7599,
+                        0.76,
+                        0.7601,
+                        0.7602,
+                        0.7597,
+                        0.7599,
+                        0.76,
+                        0.76,
+                    ],
+                    maxs=[
+                        0.7597,
+                        0.7599,
+                        0.76,
+                        0.7601,
+                        0.7602,
+                        0.7597,
+                        0.7599,
+                        0.76,
+                        0.76,
+                    ],
+                ),
+                "size": Selected.Y(
+                    mins=[
+                        500.0,
+                        1000.0,
+                        1000.0,
+                        1000.0,
+                        1000.0,
+                        500.0,
+                        1000.0,
+                        385.0,
+                        500.0,
+                    ],
+                    maxs=[
+                        500.0,
+                        1000.0,
+                        1000.0,
+                        1000.0,
+                        1000.0,
+                        500.0,
+                        1000.0,
+                        385.0,
+                        500.0,
+                    ],
+                ),
+            },
         )
