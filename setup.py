@@ -1,3 +1,5 @@
-import setuptools
+from setuptools import setup, Extension
 
-setuptools.setup()
+setup(
+    ext_modules=[Extension("fast_pad_and_sample", ["csv_plot/fast_pad_and_sample.c"])]
+)

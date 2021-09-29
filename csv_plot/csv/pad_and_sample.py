@@ -1,11 +1,11 @@
 import hashlib
-from multiprocessing import Pool, cpu_count
 import os
 from collections import defaultdict
+from multiprocessing import Pool
 from pathlib import Path
 from typing import IO, Dict, List, Optional, Set, Tuple
 
-from .padded_text_file import padded_text_file
+from fast_pad_and_sample import pad as fast_pad
 
 
 def pseudo_hash(path: Path, string: str = "") -> str:
@@ -102,31 +102,8 @@ def pad(
 
     real_start_byte = 0 if start_byte is None else start_byte
     real_stop_byte = input_path.stat().st_size if stop_byte is None else stop_byte
-    amplitude = real_stop_byte - real_start_byte
 
-    nb_bytes_read = 0
-    max_line_lenght = 0
-
-    with input_path.open() as lines:
-        lines.seek(real_start_byte)
-
-        while nb_bytes_read < amplitude:
-            line = next(lines)
-            line_length = len(line.rstrip(os.linesep))
-            max_line_lenght = max(line_length, max_line_lenght)
-            nb_bytes_read += len(line)
-
-    nb_bytes_read = 0
-
-    with input_path.open() as source_lines, output_path.open("w") as dest_file:
-        source_lines.seek(real_start_byte)
-
-        while nb_bytes_read < amplitude:
-            source_line = next(source_lines)
-            stripped_source_line = source_line.rstrip()
-            padding = max_line_lenght - len(stripped_source_line)
-            dest_file.write(f"{stripped_source_line}{' '*padding}\n")
-            nb_bytes_read += len(source_line)
+    fast_pad(str(input_path), str(output_path), real_start_byte, real_stop_byte)
 
 
 def sample(
