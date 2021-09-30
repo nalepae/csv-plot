@@ -191,9 +191,9 @@ def sample(
 
         x_value = ""
 
-        index_to_min_max: Dict[int, Tuple[float, float]] = defaultdict(
-            lambda: (float("inf"), float("-inf"))
-        )
+        min_max_tuples = [
+            (float("inf"), float("-inf")) for _ in range(len(first_line_values))
+        ]
 
         while nb_bytes_read < amplitude:
             not_stripped_line = next(source_file)
@@ -202,9 +202,9 @@ def sample(
 
             for index, value in enumerate(values):
                 if index in y_indexes:
-                    min_, max_ = index_to_min_max[index]
+                    min_, max_ = min_max_tuples[index]
 
-                    index_to_min_max[index] = (
+                    min_max_tuples[index] = (
                         min(min_, float(value)),
                         max(max_, float(value)),
                     )
@@ -215,19 +215,25 @@ def sample(
             if line_num % period == period - 1:
                 dest_items = [x_value] + [
                     str(item)
-                    for sublist in index_to_min_max.values()
+                    for index, sublist in enumerate(min_max_tuples)
+                    if index in y_indexes
                     for item in sublist
                 ]
 
                 dest_file.write(f'{",".join(dest_items)}\n')
-                index_to_min_max = defaultdict(lambda: (float("inf"), float("-inf")))
+                min_max_tuples = [
+                    (float("inf"), float("-inf")) for _ in range(len(first_line_values))
+                ]
 
             line_num += 1
             nb_bytes_read += len(not_stripped_line)
 
         if (line_num - 1) % period != period - 1:
             dest_items = [x_value] + [
-                str(item) for sublist in index_to_min_max.values() for item in sublist
+                str(item)
+                for index, sublist in enumerate(min_max_tuples)
+                if index in y_indexes
+                for item in sublist
             ]
 
             dest_file.write(f'{",".join(dest_items)}\n')
