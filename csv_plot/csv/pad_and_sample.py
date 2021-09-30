@@ -196,8 +196,7 @@ def sample(
         ]
 
         while nb_bytes_read < amplitude:
-            not_stripped_line = next(source_file)
-            line = not_stripped_line.rstrip()
+            line = next(source_file)
             values = line.split(",")
 
             for index, value in enumerate(values):
@@ -226,7 +225,7 @@ def sample(
                 ]
 
             line_num += 1
-            nb_bytes_read += len(not_stripped_line)
+            nb_bytes_read += len(line)
 
         if (line_num - 1) % period != period - 1:
             dest_items = [x_value] + [
