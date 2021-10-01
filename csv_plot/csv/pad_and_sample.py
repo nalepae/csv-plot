@@ -209,7 +209,6 @@ def sample(
 
     real_start_byte = 0 if start_byte is None else start_byte
     real_stop_byte = source_path.stat().st_size if stop_byte is None else stop_byte
-    amplitude = real_stop_byte - real_start_byte
 
     with source_path.open() as source_file, dest_path.open("w") as dest_file:
         not_stripped_header_line = next(source_file)
@@ -233,9 +232,6 @@ def sample(
         }
 
         y_headers = [index_to_header[y_index] for y_index in y_indexes]
-
-        source_file.seek(0)
-        next(source_file)
 
         if real_start_byte == 0:
             dest_headers = [x] + [
