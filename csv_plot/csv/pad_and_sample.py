@@ -189,8 +189,6 @@ def sample(
         else:
             source_file.seek(real_start_byte)
 
-        x_value = ""
-
         min_max_tuples = [
             (float("inf"), float("-inf")) for _ in range(len(first_line_values))
         ]
