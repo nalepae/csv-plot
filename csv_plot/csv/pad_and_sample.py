@@ -199,14 +199,14 @@ def sample(
             line = next(source_file)
             values = line.split(",")
 
-            for index, value in enumerate(values):
-                if index in y_indexes:
-                    min_, max_ = min_max_tuples[index]
+            for index in y_indexes:
+                min_, max_ = min_max_tuples[index]
+                value = float(values[index])
 
-                    min_max_tuples[index] = (
-                        min(min_, float(value)),
-                        max(max_, float(value)),
-                    )
+                min_max_tuples[index] = (
+                    min(min_, value),
+                    max(max_, value),
+                )
 
             if line_num % period == 0:
                 x_value = values[x_index]
