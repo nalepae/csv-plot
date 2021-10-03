@@ -12,10 +12,9 @@ static PyObject *method_pad(PyObject *self, PyObject *args)
     char format[10];
 
     /* Parse arguments */
-    if (!PyArg_ParseTuple(args, "ssll", &input_path, &output_path, &start_byte, &stop_byte))
-    {
+    if (!PyArg_ParseTuple(
+            args, "ssll", &input_path, &output_path, &start_byte, &stop_byte))
         return NULL;
-    }
 
     long int amplitude = stop_byte - start_byte;
 
