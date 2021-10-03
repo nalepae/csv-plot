@@ -213,16 +213,16 @@ def test_sample_5(tmpdir, not_padded_file_path, sampled_5_file_path):
     assert filecmp.cmp(tmpdir / "output.csv", sampled_5_file_path)
 
 
-def test_sample_sampled_full_header(tmpdir, sampled_0_1_file_path):
-    sample_sampled(sampled_0_1_file_path, Path(tmpdir) / "output.csv", 2, True)
+# def test_sample_sampled_full_header(tmpdir, sampled_0_1_file_path):
+#     sample_sampled(sampled_0_1_file_path, Path(tmpdir) / "output.csv", 2, True)
 
-    assert filecmp.cmp(tmpdir / "output.csv", sampled_0_1_file_path)
+#     assert filecmp.cmp(tmpdir / "output.csv", sampled_0_1_file_path)
 
 
-def test_sample_sampled_full_no_header(tmpdir, sampled_5_file_path):
-    sample_sampled(sampled_5_file_path, Path(tmpdir) / "output.csv", 2, False)
+# def test_sample_sampled_full_no_header(tmpdir, sampled_5_file_path):
+#     sample_sampled(sampled_5_file_path, Path(tmpdir) / "output.csv", 2, False)
 
-    assert filecmp.cmp(tmpdir / "output.csv", sampled_5_file_path)
+#     assert filecmp.cmp(tmpdir / "output.csv", sampled_5_file_path)
 
 
 def test_pad_and_sample(

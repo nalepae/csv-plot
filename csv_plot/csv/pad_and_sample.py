@@ -1,76 +1,11 @@
 import hashlib
 import os
-from collections import defaultdict
 from multiprocessing import Pool
 from pathlib import Path
 from typing import IO, Dict, List, Optional, Set, Tuple
 
 from fast_pad_and_sample import pad as fast_pad
-
-
-def fast_sample(
-    source_path: Path,
-    dest_path: Path,
-    x_index: int,
-    y_indexes: List[int],
-    nb_values: int,
-    period: int,
-    start_byte: int,
-    stop_byte: int,
-) -> None:
-    # To be written in C
-    # ------------------
-
-    min_max_tuples = [(float("inf"), float("-inf")) for _ in range(nb_values)]
-    line_num = 0
-    nb_bytes_read = 0
-    amplitude = stop_byte - start_byte
-
-    with source_path.open() as source_file, dest_path.open("a") as dest_file:
-        source_file.seek(start_byte)
-
-        while nb_bytes_read < amplitude:
-            line = next(source_file)
-            values = line.split(",")
-
-            for index in y_indexes:
-                min_, max_ = min_max_tuples[index]
-                value = float(values[index])
-
-                min_max_tuples[index] = (
-                    min(min_, value),
-                    max(max_, value),
-                )
-
-            if line_num % period == 0:
-                x_value = values[x_index]
-
-            if line_num % period == period - 1:
-                dest_items = [x_value] + [
-                    str(item)
-                    for index, sublist in enumerate(min_max_tuples)
-                    if index in y_indexes
-                    for item in sublist
-                ]
-
-                dest_file.write(f'{",".join(dest_items)}\n')
-
-                min_max_tuples = [
-                    (float("inf"), float("-inf")) for _ in range(nb_values)
-                ]
-
-            line_num += 1
-            nb_bytes_read += len(line)
-
-        if (line_num - 1) % period != period - 1:
-            dest_items = [x_value] + [
-                str(item)
-                for index, sublist in enumerate(min_max_tuples)
-                if index in y_indexes
-                for item in sublist
-            ]
-
-            dest_file.write(f'{",".join(dest_items)}\n')
+from fast_pad_and_sample import sample as fast_sample
 
 
 def pseudo_hash(path: Path, string: str = "") -> str:
@@ -214,24 +149,22 @@ def sample(
         not_stripped_header_line = next(source_file)
         header_line = not_stripped_header_line.rstrip()
         headers = header_line.split(",")
-        index_to_header = {index: header for index, header in enumerate(headers)}
 
-        x_index, *trash = [
-            index for (index, header) in index_to_header.items() if header == x
-        ]
+        x_index, *trash = [index for index, header in enumerate(headers) if header == x]
 
         assert len(trash) == 0, "Multiple `x` in headers"
 
         first_line = next(source_file)
         first_line_values = first_line.split(",")
 
-        y_indexes = {
+        indexes = {
             index
             for index, value in enumerate(first_line_values)
-            if index != x_index and not has_to_be_excluded(value)
-        }
+            if not has_to_be_excluded(value)
+        }.union({x_index})
 
-        y_headers = [index_to_header[y_index] for y_index in y_indexes]
+        y_indexes = indexes - {x_index}
+        y_headers = [headers[y_index] for y_index in y_indexes]
 
         if real_start_byte == 0:
             dest_headers = [x] + [
@@ -244,12 +177,19 @@ def sample(
 
             dest_file.write(f'{",".join(dest_headers)}\n')
 
+    sorted_indexes = list(indexes)
+    first_index, *_ = sorted_indexes
+
+    deltas = [first_index] + [
+        right - left for left, right in zip(sorted_indexes[:-1], sorted_indexes[1:])
+    ]
+
     fast_sample(
-        source_path,
-        dest_path,
-        x_index,
-        list(y_indexes),
-        len(first_line_values),
+        str(source_path),
+        str(dest_path),
+        sorted_indexes.index(x_index),
+        deltas,
+        len(deltas),
         period,
         len(not_stripped_header_line) if real_start_byte == 0 else real_start_byte,
         real_stop_byte,
