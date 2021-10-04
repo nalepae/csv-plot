@@ -196,6 +196,49 @@ def sample(
     )
 
 
+def fast_sample_sampled(
+    source_path: Path, dest_path: Path, nb_y_values: int, period: int, has_header: bool
+):
+    # To be coded in C
+
+    values = [
+        float("inf") if index % 2 == 0 else float("-inf")
+        for index in range(nb_y_values)
+    ]
+
+    with source_path.open() as source_file, dest_path.open("a") as dest_file:
+        if has_header:
+            next(source_file)
+
+        for line_num, line_not_stripped in enumerate(source_file):
+            line = line_not_stripped.rstrip()
+            str_values = line.split(",")
+            x_value_temp, *y_values = str_values
+
+            for index, value in enumerate(y_values):
+                values[index] = (
+                    min(float(value), values[index])
+                    if index % 2 == 0
+                    else max(float(value), values[index])
+                )
+
+            if line_num % period == 0:
+                x_value = x_value_temp
+
+            if line_num % period == period - 1:
+                dest_items = [x_value] + [str(value) for value in values]
+                dest_file.write(f'{",".join(dest_items)}\n')
+
+                values = [
+                    float("inf") if index % 2 == 0 else float("-inf")
+                    for index in range(nb_y_values)
+                ]
+
+        if line_num % period != period - 1:
+            dest_items = [x_value] + [str(value) for value in values]
+            dest_file.write(f'{",".join(dest_items)}\n')
+
+
 def sample_sampled(
     source_path: Path, dest_path: Path, period: int, has_header: bool
 ) -> None:
@@ -226,43 +269,8 @@ def sample_sampled(
 
         if has_header:
             dest_file.write(line)
-        else:
-            source_file.seek(0)
 
-        x_value = ""
-
-        values = [
-            float("inf") if index % 2 == 0 else float("-inf")
-            for index in range(nb_y_values)
-        ]
-
-        for line_num, line_not_stripped in enumerate(source_file):
-            line = line_not_stripped.rstrip()
-            str_values = line.split(",")
-            x_value_temp, *y_values = str_values
-
-            for index, value in enumerate(y_values):
-                values[index] = (
-                    min(float(value), values[index])
-                    if index % 2 == 0
-                    else max(float(value), values[index])
-                )
-
-            if line_num % period == 0:
-                x_value = x_value_temp
-
-            if line_num % period == period - 1:
-                dest_items = [x_value] + [str(value) for value in values]
-                dest_file.write(f'{",".join(dest_items)}\n')
-
-                values = [
-                    float("inf") if index % 2 == 0 else float("-inf")
-                    for index in range(nb_y_values)
-                ]
-
-        if line_num % period != period - 1:
-            dest_items = [x_value] + [str(value) for value in values]
-            dest_file.write(f'{",".join(dest_items)}\n')
+    fast_sample_sampled(source_path, dest_path, nb_y_values, period, has_header)
 
 
 def pad_to_the_end(nb_workers: int, global_dir: Path, index: int) -> None:
