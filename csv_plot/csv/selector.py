@@ -308,7 +308,9 @@ def selector(
                     )
 
     """
-    sampled_paths = [path for path in dir_path.iterdir() if path.name != "0"]
+    sampled_paths = [
+        path for path in dir_path.iterdir() if path.name not in ("0", "SUCCESS")
+    ]
 
     sampled_ys = [
         item for sublist in [[f"{y}_min", f"{y}_max"] for y in ys] for item in sublist

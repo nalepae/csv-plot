@@ -297,13 +297,16 @@ def pad_and_sample(
     try:
         dir_path.mkdir(parents=True)
     except FileExistsError:
-        return False
+        success_file = dir_path / "SUCCESS"
+
+        if success_file.exists():
+            return False
 
     padded_path = dir_path / "0"
-    padded_path.mkdir(parents=True)
+    padded_path.mkdir(parents=True, exist_ok=True)
 
     sampled_path_1 = dir_path / "1_sampled"
-    sampled_path_1.mkdir(parents=True)
+    sampled_path_1.mkdir(parents=True, exist_ok=True)
 
     chunks = compute_chunks(source_csv_file_path, nb_workers)
 
@@ -332,5 +335,8 @@ def pad_and_sample(
 
     sample_sampled_to_the_end(nb_workers, dir_path, 1)
     pad_to_the_end(nb_workers, dir_path, 1)
+
+    success_file = dir_path / "SUCCESS"
+    success_file.touch()
 
     return True
