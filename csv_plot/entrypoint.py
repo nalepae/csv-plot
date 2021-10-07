@@ -270,7 +270,6 @@ def main(
         chosen_configuration = configurations[int(choice)]
 
     x = chosen_configuration.general.variable
-    ys = columns - {x}
 
     secho("Process CSV file... ", fg=colors.BRIGHT_GREEN, bold=True, nl=False)
     pad_and_sample(csv_path, FILES_DIR, x, cpu_count())
