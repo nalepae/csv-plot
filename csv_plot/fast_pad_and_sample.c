@@ -183,9 +183,95 @@ static PyObject *method_sample(PyObject *self, PyObject *args)
     return PyLong_FromLong(0);
 }
 
+static PyObject *method_sample_sampled(PyObject *self, PyObject *args)
+{
+    const char *input_path;
+    const char *output_path;
+    long int nb_y_values, period;
+    long int line_num = 0;
+    int has_header;
+
+    char line[1000];
+    char x_value[50];
+
+    /* Parse arguments */
+    if (!PyArg_ParseTuple(args,
+                          //   "ssll",
+                          "ssllp",
+                          &input_path,
+                          &output_path,
+                          &nb_y_values,
+                          &period,
+                          &has_header))
+        return NULL;
+
+    FILE *input_fptr = fopen(input_path, "r");
+    FILE *output_fptr = fopen(output_path, "a");
+
+    if (has_header)
+    {
+        fgets(line, sizeof(line), input_fptr);
+    }
+
+    float *values = (float *)calloc(nb_y_values, sizeof(float));
+
+    for (int i = 0; i < nb_y_values; i++)
+        values[i] = i % 2 == 0 ? INFINITY : -INFINITY;
+
+    while (fgets(line, sizeof(line), input_fptr))
+    {
+        char *value_string = strtok(line, ",");
+
+        if (line_num % period == 0)
+            strcpy(x_value, value_string);
+
+        for (int i = 0; i < nb_y_values; i++)
+        {
+            value_string = strtok(NULL, ",");
+            float value = atof(value_string);
+            float current_value = values[i];
+
+            values[i] = i % 2 == 0 ? (value < current_value ? value : current_value)
+                                   : (value > current_value ? value : current_value);
+        }
+
+        if (line_num % period == period - 1)
+        {
+            fprintf(output_fptr, "%s,", x_value);
+
+            for (int i = 0; i < nb_y_values - 1; i++)
+                fprintf(output_fptr, "%f,", values[i]);
+
+            fprintf(output_fptr, "%f\n", values[nb_y_values - 1]);
+
+            for (int i = 0; i < nb_y_values; i++)
+                values[i] = i % 2 == 0 ? INFINITY : -INFINITY;
+        }
+
+        line_num++;
+    }
+
+    if ((line_num - 1) % period != period - 1)
+    {
+        fprintf(output_fptr, "%s,", x_value);
+
+        for (int i = 0; i < nb_y_values - 1; i++)
+            fprintf(output_fptr, "%f,", values[i]);
+
+        fprintf(output_fptr, "%f\n", values[nb_y_values - 1]);
+    }
+
+    fclose(output_fptr);
+    fclose(input_fptr);
+    free(values);
+
+    return PyLong_FromLong(0);
+}
+
 static PyMethodDef FpadAndSampleMethods[] = {
     {"pad", method_pad, METH_VARARGS, "Fast pad"},
     {"sample", method_sample, METH_VARARGS, "Fast sample"},
+    {"sample_sampled", method_sample_sampled, METH_VARARGS, "Fast sample sampled"},
     {NULL, NULL, 0, NULL}};
 
 static struct PyModuleDef fast_pad_and_sample_module = {
