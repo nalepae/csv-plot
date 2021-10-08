@@ -279,11 +279,9 @@ def main(
     win.showMaximized()
 
     first_plot: Optional[PlotItem] = None
-    position_to_plot: Dict[Tuple[int, int], PlotItem] = {}
-
     variable_to_low_high: Dict[str, Tuple[PlotCurveItem, PlotCurveItem]] = {}
 
-    for layout_item in chosen_configuration.layout:
+    def get_plot(layout_item: Configuration.LayoutItem) -> PlotItem:
         plot: PlotItem = (
             win.addPlot(
                 row=layout_item.x - 1,
@@ -312,14 +310,17 @@ def main(
             units=layout_item.unit,
         )
 
-        if first_plot is not None:
-            plot.setXLink(first_plot)
-        else:
-            first_plot = plot
+        return plot
 
-        position_to_plot[(layout_item.x, layout_item.y)] = plot
+    position_to_plot = {
+        (layout_item.x, layout_item.y): get_plot(layout_item)
+        for layout_item in chosen_configuration.layout
+    }
 
-    assert first_plot is not None
+    first_plot, *plots = position_to_plot.values()
+
+    for plot in plots:
+        plot.setXLink(first_plot)
 
     for curve in chosen_configuration.curves:
         color = COLOR_NAME_TO_HEXA[curve.color]
