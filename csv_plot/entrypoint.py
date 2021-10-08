@@ -312,15 +312,14 @@ def main(
 
         return plot
 
-    position_to_plot = {
-        (layout_item.x, layout_item.y): get_plot(layout_item)
-        for layout_item in chosen_configuration.layout
-    }
-
-    first_plot, *plots = position_to_plot.values()
-
-    for plot in plots:
-        plot.setXLink(first_plot)
+    position_to_plot: Dict[Tuple[int, int], PlotItem] = (
+        {
+            (layout_item.x, layout_item.y): get_plot(layout_item)
+            for layout_item in chosen_configuration.layout
+        }
+        if chosen_configuration.layout is not None
+        else {}
+    )
 
     for curve in chosen_configuration.curves:
         color = COLOR_NAME_TO_HEXA[curve.color]
@@ -328,12 +327,23 @@ def main(
         high = PlotCurveItem(pen=color)
         fill = FillBetweenItem(low, high, color)
 
+        if not (curve.x, curve.y) in position_to_plot:
+            position_to_plot[(curve.x, curve.y)] = get_plot(
+                Configuration.LayoutItem(position=f"{curve.x}-{curve.y}")
+            )
+
         plot = position_to_plot[(curve.x, curve.y)]
+
         plot.addItem(low)
         plot.addItem(high)
         plot.addItem(fill)
 
         variable_to_low_high[curve.variable] = low, high
+
+    first_plot, *plots = position_to_plot.values()
+
+    for plot in plots:
+        plot.setXLink(first_plot)
 
     date_time_formats = chosen_configuration.general.date_time_formats
 

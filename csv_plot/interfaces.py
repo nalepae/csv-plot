@@ -93,18 +93,9 @@ class Configuration(BaseModel):
             return int(y)
 
     general: General
-    layout: List[LayoutItem]
+    layout: Optional[List[LayoutItem]]
     curves: List[Curve]
     variables: Set[str] = set()
-
-    @validator("curves", each_item=True)
-    def check_all_curve_is_in_layout(
-        cls, value: Curve, values: Dict[str, Any]
-    ) -> Curve:
-        assert value.position in (
-            layout_item.position for layout_item in values["layout"]
-        ), f"Curve with position {value.position} does not fit in layout"
-        return value
 
     @validator("variables", always=True)
     def set_variables(cls, value, values: Dict[str, Any]) -> Set[str]:
