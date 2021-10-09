@@ -282,19 +282,15 @@ def main(
     variable_to_low_high: Dict[str, Tuple[PlotCurveItem, PlotCurveItem]] = {}
 
     def get_plot(layout_item: Configuration.LayoutItem) -> PlotItem:
-        plot: PlotItem = (
-            win.addPlot(
-                row=layout_item.x - 1,
-                col=layout_item.y - 1,
-                title=layout_item.title,
-                axisItems={"bottom": DateAxisItem()},
-            )
-            if chosen_configuration.general.date_time_formats is not None
-            else win.addPlot(
-                row=layout_item.x - 1,
-                col=layout_item.y - 1,
-                title=layout_item.title,
-            )
+        plot: PlotItem = win.addPlot(
+            row=layout_item.x - 1,
+            col=layout_item.y - 1,
+            title=layout_item.title,
+            axisItems=(
+                {"bottom": DateAxisItem()}
+                if chosen_configuration.general.as_datetime
+                else {}
+            ),
         )
         plot.showGrid(x=True, y=True)
 

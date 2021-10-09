@@ -51,6 +51,7 @@ class Configuration(BaseModel):
         variable: str
         label: Optional[str]
         unit: Optional[str]
+        as_datetime: bool = Field(False, alias="asDateTime")
         date_time_formats: Optional[List[str]] = Field(None, alias="dateTimeFormats")
 
     class LayoutItem(BaseModel):
