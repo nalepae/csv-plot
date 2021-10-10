@@ -32,8 +32,7 @@ $ pip install csv-plot
 
 ## Complete documentation
 
-The complete **CSV Plot** documentation could be found here:
-https://nalepae.github.io/csv-plot/##installing-a-c-compiler
+The complete **CSV Plot** documentation could be found [here](https://nalepae.github.io/csv-plot/).
 
 ## Installing a C compiler
 
