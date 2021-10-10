@@ -30,9 +30,9 @@ compiler](##installing-a-c-compiler) section at the end of this document.
 $ pip install csv-plot
 ```
 
-## Complete documentation
+## Official documentation
 
-The complete **CSV Plot** documentation could be found [here](https://nalepae.github.io/csv-plot/).
+The official documentation is hosted on Github Pages: https://nalepae.github.io/csv-plot
 
 ## Installing a C compiler
 
