@@ -75,8 +75,8 @@ class Configuration(BaseModel):
             return int(y)
 
     class Curve(BaseModel):
-        position: constr(regex=r"^[0-9]+-[0-9]+$")  # type: ignore
         variable: str
+        position: constr(regex=r"^[0-9]+-[0-9]+$") = "1-1"  # type: ignore
         color: Color = Color.Yellow
 
         # Computed
