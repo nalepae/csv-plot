@@ -118,7 +118,11 @@ def get_default_configuration_files() -> Iterator[Path]:
 
     with CONFIG_PATH.open("r") as file_descriptor:
         configuration = json.load(file_descriptor)
-        return Path(configuration["default_configuration_directory"]).iterdir()
+        return (
+            path
+            for path in Path(configuration["default_configuration_directory"]).iterdir()
+            if path.suffix == ".yaml"
+        )
 
 
 @app.command()
