@@ -278,6 +278,23 @@ $ csv-plot <path-to-csv-file> -c <path-to-one-csv-plot-configuration-file> \
 -c <path-to-a-csv-plot-configuration-directory>
 ```
 
+### Using default configuration directory
+
+If you don't want to specify each time the path of your configuration file or
+configuration directory, you can do:
+
+```bash
+$ csv-plot --set-default-configuration-directory <path-to-csv-plot-configuration-directory>
+```
+
+You can now write:
+
+```bash
+$ csv-plot <path-to-csv-file>
+```
+
+without having to specify the `-c` option.
+
 ## Installing a C compiler
 
 ### On Ubuntu
