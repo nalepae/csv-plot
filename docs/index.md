@@ -301,7 +301,7 @@ Until now, we only used a tiny file containing 1.000 lines. The true power of
 **CSV Plot** is to handle files of millions or event billions lines very smoothly, and
 without getting any "Out of Memory" error.
 
-Download and unzip this file: https://drive.google.com/file/d/16_B7LTtwg0_NmvfgmgTIXYL9GaKyd27j/view?usp=sharing
+Download and unzip [this file](https://drive.google.com/file/d/16_B7LTtwg0_NmvfgmgTIXYL9GaKyd27j/view?usp=sharing).
 
 It contains all historical data (trade by trade) for the cryptocurrency pair ETH-USD on
 Coinbase between in May 2017 to June 2021.
