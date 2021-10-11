@@ -295,6 +295,67 @@ $ csv-plot <path-to-csv-file>
 
 without having to specify the `-c` option.
 
+### Unleash the full power of **CSV Plot**
+
+Until now, we only used a tiny file containing 1.000 lines. The true power of
+**CSV Plot** is to handle files of millions or event billions lines very smoothly, and
+without getting any "Out of Memory" error.
+
+Download and unzip this file: https://drive.google.com/file/d/16_B7LTtwg0_NmvfgmgTIXYL9GaKyd27j/view?usp=sharing
+
+It contains all historical data (trade by trade) for the cryptocurrency pair ETH-USD on
+Coinbase between in May 2017 to June 2021.
+
+This file contains about 129 millions of lines (that's a lot!).
+
+Here are the first lines of this file:
+
+```
+time,trade_id,price,side,size
+2016-05-18 00:14:03.60168+00,1,12.5,sell,0.39900249
+2016-05-18 00:25:04.8331+00,2,12.5,sell,0.60099751
+2016-05-18 00:25:04.833469+00,3,13.0,sell,0.18943026
+2016-05-18 00:36:37.07255+00,4,12.75,sell,0.58911544
+2016-05-18 00:38:52.981904+00,5,12.75,sell,4.41088456
+2016-05-18 00:38:52.982089+00,6,13.0,sell,0.31056974
+```
+
+In the default configuration directory you created in the previous part, copy the
+following content in the file `crypto-1.yaml`:
+
+```yaml
+general:
+  variable: trade_id
+  label: Trade ID
+
+curves:
+  - variable: price
+    position: 1-1
+
+layout:
+  - position: 1-1
+    label: Price
+    unit: USD
+```
+
+Now run:
+
+```bash
+$ csv-plot <path-to-csv-file>
+```
+
+**CSV Plot** will process the file. This could take up to 3 minutes, depending of your
+computer. This processing part is done only once. The next time, curves will be
+displayed instantly.
+
+Notice that **CSV Plot** did not asked you which configuration file to use, despite of
+the fact there is multiple files in the default configuration directory. **CSV Plot**
+automatically detected that only one configuration file suits the columns of the CSV
+file, so it chose it.
+
+Once the processing part is done, you can move and zoom very smoothly on this 129
+millions of points curve.
+
 ## Installing a C compiler
 
 ### On Ubuntu
