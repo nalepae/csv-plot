@@ -225,6 +225,59 @@ For each sub-plot:
 - `label` and `unit` adds label/unit of the `y` axis of the subplot (left of sub-plot)
 - `title` adds a title for the sub-plot (top of sub-plot)
 
+### Using abscissa as dateTime
+
+#### Here we go
+
+Copy the content of the file `configuration-4.yaml`, and copy it in a file named
+`configuration-5.yaml`. In the `general` section, add `datetime: true`, so it looks like
+it:
+
+```yaml
+general:
+  variable: index
+  label: Time
+  unit: sec
+  asDateTime: true
+```
+
+The x axis contains now dateTime instead of integers. If `asDateTime: true` is set, then
+the `general/variable` will be considered as the number of seconds since the 1st January 1970.
+
+### Using configuration directory instead of configuration file
+
+Move all you previously created configuration files (`configuration-<x>.yaml`) into a
+directory named `csv-plot-configuration`. You will have something like:
+
+```
+csv-plot-configuration
+|
+|- configuration-1.yaml
+|- configuration-2.yaml
+|- configuration-3.yaml
+|- configuration-4.yaml
+|- configuration-5.yaml
+```
+
+Then write
+
+```bash
+$ csv-plot <path-to-csv-file> -c <path-to-csv-plot-configuration-directory>
+```
+
+**CSV Plot** will automatically detect which configuration files are suitable with the
+CSV file. If it detects several suitable configuration files (like in this example),
+then **CSV Plot** will ask you which one do you want to use. (If there is only one which
+is suitable, then **CSV Plot** will use it without asking.)
+
+You can also mix multiple configuration files and/or multiple configuration directories:
+
+```bash
+$ csv-plot <path-to-csv-file> -c <path-to-one-csv-plot-configuration-file> \
+-c <path-to-another-csv-plot-configuration-file> \
+-c <path-to-a-csv-plot-configuration-directory>
+```
+
 ## Installing a C compiler
 
 ### On Ubuntu
