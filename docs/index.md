@@ -356,6 +356,57 @@ file, so it chose it.
 Once the processing part is done, you can move and zoom very smoothly on this 129
 millions of points curve.
 
+### Parsing datetime
+
+The file we used in the previous section contains a `time` column. This column
+represents a datetime. To use it, we have to tell **CSV Plot** how to parse it.
+
+In the default configuration directory you created in the previous part, copy the
+following content in the file `crypto-2.yaml`:
+
+```yaml
+general:
+  dateTimeFormats:
+    - "%Y-%m-%d %H:%M:%S.%f+00"
+    - "%Y-%m-%d %H:%M:%S+00"
+  variable: time
+  label: Date
+  asDateTime: true
+
+curves:
+  - variable: price
+    position: 1-1
+
+layout:
+  - position: 1-1
+    label: Price
+    unit: USD
+```
+
+Now run:
+
+```bash
+$ csv-plot <path-to-csv-file>
+```
+
+Here, 2 configuration files are suitable for the CSV file, so **CSV Plot** asks you to
+choose which one do you want to use.
+
+In the configuration files, the `dateTimeFormats` section contains a list of date time
+formats. Suitable formats correspond to the Python function
+[strftime](https://docs.python.org/3.6/library/datetime.html#strftime-strptime-behavior).
+
+Usually, all datetimes of the CSV file match with the same format. If it is not the
+case, you can specify multiple formats (like in this example).
+
+Be carefull: **CSV Plot** will always try to match formats in the same order than in
+this configuration file, and will stop to the first which works. Put the format which is
+likely to be the more common first, so plotting experience will be smoother.
+
+Remember: The `asDateTime` value determines if the `x` axis should be represented in
+seconds since the 1st Janurary 1970 or in plain text. Usages of `asDateTime` and
+`dateTimeFormats` are totally independent.
+
 ## Installing a C compiler
 
 ### On Ubuntu
