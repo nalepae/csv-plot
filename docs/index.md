@@ -419,7 +419,7 @@ formats. Suitable formats correspond to the Python function
 Usually, all datetimes of the CSV file match with the same format. If it is not the
 case, you can specify multiple formats (like in this example).
 
-Be carefull: **CSV Plot** will always try to match formats in the same order than in
+Be careful: **CSV Plot** will always try to match formats in the same order than in
 this configuration file, and will stop to the first which works. Put the format which is
 likely to be the more common first, so plotting experience will be smoother.
 
