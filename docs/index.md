@@ -71,6 +71,10 @@ Then write
 $ csv-plot <path-to-csv-file> -c <path-to-configuration-1.yaml>
 ```
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/nalepae/csv-plot/master/docs/the-simplest-possible-example.png"><br>
+</div>
+
 Here we are, you get your first shiny plot!
 
 - To move, keep left mouse button pressed then move the mouse.
@@ -117,6 +121,10 @@ Then write
 $ csv-plot <path-to-csv-file> -c <path-to-configuration-2.yaml>
 ```
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/nalepae/csv-plot/master/docs/two-curves-on-the-same-plot.png"><br>
+</div>
+
 #### Explanation of the configuration file
 
 You see two curves. `sin` is in yellow, `cos` is in green. If no color is specified,
@@ -158,6 +166,10 @@ Then write
 ```bash
 $ csv-plot <path-to-csv-file> -c <path-to-configuration-1.yaml>
 ```
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/nalepae/csv-plot/master/docs/multiple-sub-plots.png"><br>
+</div>
 
 #### Explanation of the configuration file
 
@@ -213,6 +225,10 @@ Then write
 $ csv-plot <path-to-csv-file> -c <path-to-configuration-4.yaml>
 ```
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/nalepae/csv-plot/master/docs/adding-titles-labels-and-units.png"><br>
+</div>
+
 #### Explanation of the configuration file
 
 We just added `general/label` and `general/unit`. These 2 values add label/unit of the
@@ -240,6 +256,10 @@ general:
   unit: sec
   asDateTime: true
 ```
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/nalepae/csv-plot/master/docs/using-abscissa-as-datetime.png"><br>
+</div>
 
 The x axis contains now dateTime instead of integers. If `asDateTime: true` is set, then
 the `general/variable` will be considered as the number of seconds since the 1st January 1970.
