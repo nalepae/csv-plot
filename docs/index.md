@@ -24,7 +24,7 @@ It works with user friendly YAML configuration files, to let you choose the layo
 
 A already installed C compiler is needed to install `csv-plot`, else the installation
 will fail. To know how to install a C compiler on your system, go to [Installing a C
-compiler](##installing-a-c-compiler) section at the end of this document.
+compiler](#installing-a-c-compiler) section at the end of this document.
 
 ```bash
 $ pip install csv-plot
