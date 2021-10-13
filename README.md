@@ -13,7 +13,7 @@
 
 ## What is it?
 
-**CSV Plot** is a tool to easily plot any CSV file, of any size, without never getting out of memory errors.
+**CSV Plot** is a tool to easily plot any CSV file, of any size, without ever running out of memory.
 (Only data which is displayed on the screen is loaded into memory.)
 
 It works with user friendly YAML configuration files, to let you choose the layout, colors, units, legends...

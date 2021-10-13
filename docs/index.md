@@ -13,7 +13,7 @@
 
 ## What is it?
 
-**CSV Plot** is a tool to easily plot any CSV file, of any size, without never getting out of memory errors.
+**CSV Plot** is a tool to easily plot any CSV file, of any size, without ever running out of memory.
 (Only data which is displayed on the screen is loaded into memory.)
 
 It works with user friendly YAML configuration files, to let you choose the layout, colors, units, legends...
@@ -53,7 +53,7 @@ This CSV file contains 1.000 rows of 5 columns:
 - `sin_rand`
 - `cos_rand`
 
-Copy the following content if a file called `configuration-1.yaml`.
+Copy the following content in a file called `configuration-1.yaml`.
 
 ```yaml
 general:
@@ -102,7 +102,7 @@ to get help on the available options.
 
 #### Here we go
 
-Copy the following content if a file called `configuration-2.yaml`.
+Copy the following content in a file called `configuration-2.yaml`.
 
 ```yaml
 general:
@@ -138,7 +138,7 @@ Here is the list of available colors: `aqua`, `black`, `blue`, `fuchsia`, `gray`
 
 #### Here we go
 
-Copy the following content if a file called `configuration-3.yaml`.
+Copy the following content in a file called `configuration-3.yaml`.
 
 ```yaml
 general:
@@ -183,7 +183,7 @@ You see 4 curves. Additionally to the previous example, we added for each curve 
 
 #### Here we go
 
-Copy the following content if a file called `configuration-4.yaml`.
+Copy the following content in a file called `configuration-4.yaml`.
 
 ```yaml
 general:
