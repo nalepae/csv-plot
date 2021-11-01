@@ -406,3 +406,4 @@ def main(
         app.exec()
     finally:
         connector.send(None)
+        background_processor.join()
