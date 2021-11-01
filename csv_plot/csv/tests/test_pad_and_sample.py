@@ -65,7 +65,7 @@ def not_padded_file_path() -> Path:
 
 @fixture
 def hashed() -> Path:
-    return Path(assets.__file__).parent / "8bed00c4529bfd12bd70678a71eaf5af"
+    return Path(assets.__file__).parent / "25f43600a0c028eb8b77711bc7ac3034"
 
 
 @fixture
@@ -99,17 +99,17 @@ def test_pad(tmpdir, not_padded_file_path, padded_file_path):
 
 
 def test_pad_0_1(tmpdir, not_padded_file_path, padded_0_1_file_path):
-    pad(not_padded_file_path, Path(tmpdir) / "padded.csv", 0, 16)
+    pad(not_padded_file_path, Path(tmpdir) / "padded.csv", 0, 20)
     assert filecmp.cmp(tmpdir / "padded.csv", padded_0_1_file_path)
 
 
 def test_pad_2_4(tmpdir, not_padded_file_path, padded_2_4_file_path):
-    pad(not_padded_file_path, Path(tmpdir) / "padded.csv", 16, 47)
+    pad(not_padded_file_path, Path(tmpdir) / "padded.csv", 20, 57)
     assert filecmp.cmp(tmpdir / "padded.csv", padded_2_4_file_path)
 
 
 def test_pad_5(tmpdir, not_padded_file_path, padded_5_file_path):
-    pad(not_padded_file_path, Path(tmpdir) / "padded.csv", 47, 59)
+    pad(not_padded_file_path, Path(tmpdir) / "padded.csv", 57, 70)
     assert filecmp.cmp(tmpdir / "padded.csv", padded_5_file_path)
 
 
@@ -125,55 +125,38 @@ def test_pseudo_hash(tmp_path: Path):
 
 
 def test_compute_chunks(not_padded_file_path: Path):
-    assert compute_chunks(not_padded_file_path, 1) == [
-        (0, 59),
-    ]
-
-    assert compute_chunks(not_padded_file_path, 2) == [
-        (0, 35),
-        (35, 59),
-    ]
+    assert compute_chunks(not_padded_file_path, 1) == [(0, 71)]
+    assert compute_chunks(not_padded_file_path, 2) == [(0, 43), (43, 71)]
 
     assert compute_chunks(not_padded_file_path, 4) == [
-        (0, 16),
-        (16, 35),
-        (35, 47),
-        (47, 59),
+        (0, 20),
+        (20, 43),
+        (43, 57),
+        (57, 71),
     ]
 
     assert compute_chunks(not_padded_file_path, 10) == [
-        (0, 8),
-        (8, 16),
-        (16, 24),
-        (24, 35),
-        (35, 47),
-        (47, 59),
+        (0, 10),
+        (10, 20),
+        (20, 30),
+        (30, 43),
+        (43, 57),
+        (57, 71),
     ]
 
 
 def test_compute_chunks_padded(padded_file_path: Path):
-    assert compute_chunks(padded_file_path, 1) == [
-        (0, 72),
-    ]
-
-    assert compute_chunks(padded_file_path, 2) == [
-        (0, 36),
-        (36, 72),
-    ]
-
-    assert compute_chunks(padded_file_path, 3) == [
-        (0, 24),
-        (24, 48),
-        (48, 72),
-    ]
+    assert compute_chunks(padded_file_path, 1) == [(0, 84)]
+    assert compute_chunks(padded_file_path, 2) == [(0, 42), (42, 84)]
+    assert compute_chunks(padded_file_path, 3) == [(0, 28), (28, 56), (56, 84)]
 
     assert compute_chunks(padded_file_path, 6) == [
-        (0, 12),
-        (12, 24),
-        (24, 36),
-        (36, 48),
-        (48, 60),
-        (60, 72),
+        (0, 14),
+        (14, 28),
+        (28, 42),
+        (42, 56),
+        (56, 70),
+        (70, 84),
     ]
 
 
@@ -196,19 +179,19 @@ def test_sample(tmpdir, not_padded_file_path, sampled_file_path):
 
 
 def test_sample_0_1(tmpdir, not_padded_file_path, sampled_0_1_file_path):
-    sample(not_padded_file_path, tmpdir / "output.csv", "a", 2, 0, 16)
+    sample(not_padded_file_path, tmpdir / "output.csv", "a", 2, 0, 20)
 
     assert filecmp.cmp(tmpdir / "output.csv", sampled_0_1_file_path)
 
 
 def test_sample_2_4(tmpdir, not_padded_file_path, sampled_2_4_file_path):
-    sample(not_padded_file_path, tmpdir / "output.csv", "a", 2, 16, 47)
+    sample(not_padded_file_path, tmpdir / "output.csv", "a", 2, 20, 57)
 
     assert filecmp.cmp(tmpdir / "output.csv", sampled_2_4_file_path)
 
 
 def test_sample_5(tmpdir, not_padded_file_path, sampled_5_file_path):
-    sample(not_padded_file_path, tmpdir / "output.csv", "a", 2, 47, 59)
+    sample(not_padded_file_path, tmpdir / "output.csv", "a", 2, 57, 71)
 
     assert filecmp.cmp(tmpdir / "output.csv", sampled_5_file_path)
 
@@ -231,27 +214,27 @@ def test_pad_and_sample(
     assert pad_and_sample(not_padded_file_path, tmp_path, "a", 2)
 
     assert filecmp.cmp(
-        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "0" / "0.csv", _0 / "0.csv"
+        tmp_path / "25f43600a0c028eb8b77711bc7ac3034" / "0" / "0.csv", _0 / "0.csv"
     )
 
     assert filecmp.cmp(
-        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "0" / "1.csv", _0 / "1.csv"
+        tmp_path / "25f43600a0c028eb8b77711bc7ac3034" / "0" / "1.csv", _0 / "1.csv"
     )
 
     assert filecmp.cmp(
-        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "1" / "0.csv", _1 / "0.csv"
+        tmp_path / "25f43600a0c028eb8b77711bc7ac3034" / "1" / "0.csv", _1 / "0.csv"
     )
 
     assert filecmp.cmp(
-        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "1" / "1.csv", _1 / "1.csv"
+        tmp_path / "25f43600a0c028eb8b77711bc7ac3034" / "1" / "1.csv", _1 / "1.csv"
     )
 
     assert filecmp.cmp(
-        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "2" / "0.csv", _2 / "0.csv"
+        tmp_path / "25f43600a0c028eb8b77711bc7ac3034" / "2" / "0.csv", _2 / "0.csv"
     )
 
     assert filecmp.cmp(
-        tmp_path / "8bed00c4529bfd12bd70678a71eaf5af" / "2" / "1.csv", _2 / "1.csv"
+        tmp_path / "25f43600a0c028eb8b77711bc7ac3034" / "2" / "1.csv", _2 / "1.csv"
     )
 
     assert not pad_and_sample(not_padded_file_path, tmp_path, "a", 2)
