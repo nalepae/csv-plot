@@ -100,7 +100,4 @@ class Configuration(BaseModel):
 
     @validator("variables", always=True)
     def set_variables(cls, value, values: Dict[str, Any]) -> Set[str]:
-        if "curves" not in values:
-            return value
-
         return {curve.variable for curve in values["curves"]}
