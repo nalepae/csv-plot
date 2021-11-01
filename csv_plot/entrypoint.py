@@ -1,5 +1,5 @@
 import json
-from csv import DictReader
+from collections import Counter
 from datetime import datetime
 from multiprocessing import Pipe, cpu_count
 from pathlib import Path
@@ -190,10 +190,27 @@ def main(
             return False
 
     with csv_path.open() as csv_file:
-        reader = DictReader(csv_file)
-        first_row = next(reader)
+        columns_list = next(csv_file).rstrip().split(",")
 
-    columns = {name for name, value in first_row.items() if is_castable_to_float(value)}
+    columns_count = Counter(columns_list)
+
+    for column, count in columns_count.items():
+        if count > 1:
+            secho(
+                "❌ ERROR: ",
+                fg=colors.BRIGHT_RED,
+                bold=True,
+                nl=False,
+            )
+
+            secho(
+                f"In file `{csv_path}``, the column `{column}` is present {count} times ❌",
+                fg=colors.BRIGHT_RED,
+            )
+
+            raise Exit()
+
+    columns = set(columns_count)
 
     # Get configurations files
     configuration_files = (
