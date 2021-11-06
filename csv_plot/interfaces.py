@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, constr, validator
 
@@ -76,12 +77,14 @@ class Configuration(BaseModel):
 
     class Curve(BaseModel):
         variable: str
+        file_name_filter: Optional[str] = Field(None, alias="fileNameFilter")
         position: constr(regex=r"^[0-9]+-[0-9]+$") = "1-1"  # type: ignore
         color: Color = Color.Yellow
 
         # Computed
         x: int = 0
         y: int = 0
+        file_path: Path = Path()
 
         @validator("x", always=True)
         def set_x(cls, _, values: Dict[str, Any]) -> int:
@@ -96,8 +99,10 @@ class Configuration(BaseModel):
     general: General
     layout: Optional[List[LayoutItem]]
     curves: List[Curve]
-    variables: Set[str] = set()
+    filters_variables: Set[Tuple[str, str]] = set()
 
-    @validator("variables", always=True)
-    def set_variables(cls, value, values: Dict[str, Any]) -> Set[str]:
-        return {curve.variable for curve in values["curves"]}
+    @validator("filters_variables", always=True)
+    def set_filters_variables(
+        cls, value, values: Dict[str, Any]
+    ) -> Set[Tuple[str, str]]:
+        return {(curve.file_name_filter, curve.variable) for curve in values["curves"]}

@@ -1,10 +1,12 @@
 import json
 from collections import Counter
+from csv import DictReader
 from datetime import datetime
+from itertools import groupby
 from multiprocessing import Pipe, cpu_count
 from pathlib import Path
 from threading import Thread
-from typing import Dict, Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Set, Tuple
 
 import yaml  # type: ignore
 from click import Choice
@@ -127,7 +129,7 @@ def get_default_configuration_files() -> Iterator[Path]:
 
 @app.command()
 def main(
-    csv_path: Path = Argument(
+    csvs_path: List[Path] = Argument(
         ...,
         help="CSV file to plot. This file must contain a header.",
         exists=True,
@@ -189,28 +191,38 @@ def main(
         except ValueError:
             return False
 
-    with csv_path.open() as csv_file:
-        columns_list = next(csv_file).rstrip().split(",")
+    for csv_path in set(csvs_path):
+        with csv_path.open() as csv_file:
+            columns_count = Counter(next(csv_file).rstrip().split(","))
 
-    columns_count = Counter(columns_list)
+        for column, count in columns_count.items():
+            if count > 1:
+                secho(
+                    "❌ ERROR: ",
+                    fg=colors.BRIGHT_RED,
+                    bold=True,
+                    nl=False,
+                )
 
-    for column, count in columns_count.items():
-        if count > 1:
-            secho(
-                "❌ ERROR: ",
-                fg=colors.BRIGHT_RED,
-                bold=True,
-                nl=False,
-            )
+                secho(
+                    f"In file `{csvs_path}`, the column `{column}` is present {count} times ❌",
+                    fg=colors.BRIGHT_RED,
+                )
 
-            secho(
-                f"In file `{csv_path}``, the column `{column}` is present {count} times ❌",
-                fg=colors.BRIGHT_RED,
-            )
+                raise Exit()
 
-            raise Exit()
+    def get_columns(csv_path: Path) -> List[str]:
+        with csv_path.open() as csv_file:
+            reader = DictReader(csv_file)
+            reader.fieldnames
+            first_row = next(reader)
 
-    columns = set(columns_count)
+        return [
+            column for column, value in first_row.items() if is_castable_to_float(value)
+        ]
+
+    columns_list = (get_columns(csv_path) for csv_path in set(csvs_path))
+    columns = {item for sublist in columns_list for item in sublist}
 
     # Get configurations files
     configuration_files = (
@@ -247,10 +259,10 @@ def main(
     matching_file_to_configuration = {
         configuration_file: configuration
         for configuration_file, configuration in configuration_file_to_configuration.items()
-        if configuration.variables <= columns
+        if {variable for _, variable in configuration.filters_variables} <= columns
     }
 
-    if len(matching_file_to_configuration) == 0:
+    def len_0(_: Dict[Path, Configuration]) -> Tuple[Path, Configuration]:
         secho(
             "❌ ERROR: ",
             fg=colors.BRIGHT_RED,
@@ -264,9 +276,16 @@ def main(
         )
 
         raise Exit()
-    elif len(matching_file_to_configuration) == 1:
-        chosen_configuration, *_ = matching_file_to_configuration.values()
-    else:
+
+    def len_1(
+        matching_file_to_configuration: Dict[Path, Configuration]
+    ) -> Tuple[Path, Configuration]:
+        chosen_file_and_configuration, *_ = matching_file_to_configuration.items()
+        return chosen_file_and_configuration
+
+    def len_bigger_1(
+        matching_file_to_configuration: Dict[Path, Configuration]
+    ) -> Tuple[Path, Configuration]:
         matching_files_configurations = list(matching_file_to_configuration.items())
         matching_files, configurations = zip(*matching_files_configurations)
 
@@ -288,19 +307,114 @@ def main(
             show_choices=False,
         )
 
-        chosen_configuration = configurations[int(choice)]
+        return matching_files[int(choice)], configurations[int(choice)]
+
+    chosen_configuration_file, chosen_configuration = {0: len_0, 1: len_1}.get(
+        len(matching_file_to_configuration), len_bigger_1
+    )(matching_file_to_configuration)
+
+    def get_column_and_path(csv_path: Path) -> List[Tuple[str, Path]]:
+        with csv_path.open() as csv_file:
+            reader = DictReader(csv_file)
+            first_row = next(reader)
+
+        return [
+            (column, csv_path)
+            for column, value in first_row.items()
+            if is_castable_to_float(value)
+        ]
+
+    column_and_path_lists = (get_column_and_path(csv_path) for csv_path in csvs_path)
+
+    column_and_path_list = (
+        item for sublist in column_and_path_lists for item in sublist
+    )
+
+    column_to_path = {
+        column: {path for _, path in column_and_path}
+        for column, column_and_path in groupby(
+            sorted(column_and_path_list), lambda x: x[0]
+        )
+    }
+
+    for curve in chosen_configuration.curves:
+        variable = curve.variable
+        potential_files = column_to_path[variable]
+        matching_files = {
+            file
+            for file in potential_files
+            if curve.file_name_filter == None
+            or str(curve.file_name_filter) in str(file)
+        }
+
+        try:
+            matching_file, *trash = matching_files
+        except ValueError:
+            secho(
+                "❌ ERROR: ",
+                fg=colors.BRIGHT_RED,
+                bold=True,
+                nl=False,
+            )
+
+            secho(
+                f"For configuration file `{chosen_configuration_file}` and the curve "
+                f"{variable}, `fileNameFilter` ({curve.file_name_filter}) is too"
+                "restrictive and does not match any CSV file. ❌",
+                fg=colors.BRIGHT_RED,
+            )
+
+            raise Exit()
+
+        if trash != []:
+            secho(
+                "❌ ERROR: ",
+                fg=colors.BRIGHT_RED,
+                bold=True,
+                nl=False,
+            )
+
+            secho(
+                f"For configuration file `{chosen_configuration_file}` and the curve "
+                f"{variable}, `fileNameFilter` ({curve.file_name_filter}) is too "
+                "loose and matches multiple CSV files. ❌",
+                fg=colors.BRIGHT_RED,
+            )
+
+            raise Exit()
+
+        curve.file_path = matching_file
+
+    file_path_to_variables = {
+        file_path: {variables for _, variables in file_path_and_variables}
+        for file_path, file_path_and_variables in groupby(
+            sorted(
+                (
+                    (curve.file_path, curve.variable)
+                    for curve in chosen_configuration.curves
+                )
+            ),
+            lambda x: x[0],
+        )
+    }
 
     x = chosen_configuration.general.variable
 
-    secho("Process CSV file... ", fg=colors.BRIGHT_GREEN, bold=True, nl=False)
-    pad_and_sample(csv_path, FILES_DIR, x, cpu_count())
-    secho("OK", fg=colors.BRIGHT_GREEN, bold=True)
+    for csv_path in csvs_path:
+        secho(
+            f"Process CSV file {csv_path}... ",
+            fg=colors.BRIGHT_GREEN,
+            bold=True,
+            nl=False,
+        )
+
+        pad_and_sample(csv_path, FILES_DIR, x, cpu_count())
+        secho("OK", fg=colors.BRIGHT_GREEN, bold=True)
 
     win = GraphicsLayoutWidget(show=True, title=f"🌊 CSV PLOT 🏄")
     win.showMaximized()
 
     first_plot: Optional[PlotItem] = None
-    variable_to_low_high: Dict[str, Tuple[PlotCurveItem, PlotCurveItem]] = {}
 
     def get_plot(layout_item: Configuration.LayoutItem) -> PlotItem:
         plot: PlotItem = win.addPlot(
@@ -338,7 +452,9 @@ def main(
         else {}
     )
 
-    for curve in chosen_configuration.curves:
+    def compute_low_high(
+        curve: Configuration.Curve, position_to_plot: Dict[Tuple[int, int], PlotItem]
+    ) -> Tuple[PlotCurveItem, PlotCurveItem]:
         color = COLOR_NAME_TO_HEXA[curve.color]
         low = PlotCurveItem(pen=color)
         high = PlotCurveItem(pen=color)
@@ -355,7 +471,14 @@ def main(
         plot.addItem(high)
         plot.addItem(fill)
 
-        variable_to_low_high[curve.variable] = low, high
+        return low, high
+
+    path_variable_to_low_high = {
+        (FILES_DIR / pseudo_hash(curve.file_path, x), curve.variable): compute_low_high(
+            curve, position_to_plot
+        )
+        for curve in chosen_configuration.curves
+    }
 
     first_plot, *plots = position_to_plot.values()
 
@@ -384,9 +507,11 @@ def main(
     connector, background_connector = Pipe()
 
     background_processor = BackgroundProcessor(
-        FILES_DIR / pseudo_hash(csv_path, x),
+        {
+            FILES_DIR / pseudo_hash(file_path, x): variables
+            for file_path, variables in file_path_to_variables.items()
+        },
         (x, parser),  # type: ignore
-        list(chosen_configuration.variables),
         background_connector,
     )
 
@@ -398,15 +523,17 @@ def main(
 
     def update():
         while True:
-            item: Optional[Tuple[List[float], Dict[str, Selected.Y]]] = connector.recv()
+            item: Optional[
+                Tuple[str, List[float], Dict[str, Selected.Y]]
+            ] = connector.recv()
 
             if item is None:
                 return
 
-            xs, variable_to_y = item
+            dir_path, xs, variable_to_y = item
 
             for variable, y in variable_to_y.items():
-                low, high = variable_to_low_high[variable]
+                low, high = path_variable_to_low_high[(dir_path, variable)]
                 low.setData(xs, y.mins)
                 high.setData(xs, y.maxs)
 
