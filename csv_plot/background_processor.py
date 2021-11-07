@@ -140,12 +140,15 @@ class BackgroundProcessor(Process):
                     )
 
                 for dir_path, selected in dir_path_to_selected.items():
-                    first_x, *_ = selected.xs
+                    if len(selected.xs) == 0:
+                        self.__connection.send((dir_path, [], selected.name_to_y))
+                    else:
+                        first_x, *_ = selected.xs
 
-                    xs = (
-                        [x.timestamp() for x in cast(List[datetime], selected.xs)]
-                        if isinstance(first_x, datetime)
-                        else cast(List[float], selected.xs)
-                    )
+                        xs = (
+                            [x.timestamp() for x in cast(List[datetime], selected.xs)]
+                            if isinstance(first_x, datetime)
+                            else cast(List[float], selected.xs)
+                        )
 
-                    self.__connection.send((dir_path, xs, selected.name_to_y))
+                        self.__connection.send((dir_path, xs, selected.name_to_y))

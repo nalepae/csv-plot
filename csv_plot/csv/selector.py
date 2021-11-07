@@ -180,7 +180,17 @@ class _Selector:
             raise ValueError("Step of slice has to be defined")
 
         spcf = self.__get_max_resolution_lines_between(start, stop, step)
-        xs, y_in_rows = zip(*spcf[start:stop])
+        data = spcf[start:stop]
+
+        if len(data) == 0:
+            return Selected(
+                xs=[],
+                name_to_y={
+                    y_name: Selected.Y(mins=[], maxs=[]) for y_name in self.__y_names
+                },
+            )
+
+        xs, y_in_rows = zip(*data)
         y_in_columns = list(zip(*y_in_rows))
 
         if spcf == self.__spcf:

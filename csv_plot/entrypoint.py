@@ -472,7 +472,7 @@ def main(
         low = PlotDataItem(
             pen=color,
             symbol="arrow_up" if curve.symbol == Symbol.ArrowUp else None,
-            symbolSize=50,
+            symbolSize=70,
             symbolPen=COLOR_NAME_TO_HEXA[Color.Green],
             symbolBrush=COLOR_NAME_TO_HEXA[Color.Green],
         )
@@ -482,14 +482,12 @@ def main(
         high = PlotDataItem(
             pen=color,
             symbol="arrow_down" if curve.symbol == Symbol.ArrowDown else None,
-            symbolSize=50,
+            symbolSize=70,
             symbolPen=COLOR_NAME_TO_HEXA[Color.Red],
             symbolBrush=COLOR_NAME_TO_HEXA[Color.Red],
         )
 
         plot.addItem(high)
-
-        low.setAlpha(0.0, True)
 
         if curve.color is not None:
             fill = FillBetweenItem(low, high, color)
@@ -558,8 +556,22 @@ def main(
 
             for variable, y in variable_to_y.items():
                 low, high = path_variable_to_low_high[(dir_path, variable)]
-                low.setData(xs, y.mins)
-                high.setData(xs, y.maxs)
+
+                try:
+                    low.setData(xs, y.mins)
+                    high.setData(xs, y.maxs)
+                except ValueError:
+                    secho(
+                        "⚠️  WARNING: ",
+                        fg=colors.BRIGHT_YELLOW,
+                        bold=True,
+                        nl=False,
+                    )
+
+                    secho(
+                        "PyQtGraph raised a ValueError - Seems to be a PyQtGraph bug ⚠️",
+                        fg=colors.BRIGHT_YELLOW,
+                    )
 
     update_thread = Thread(target=update)
     update_thread.start()
