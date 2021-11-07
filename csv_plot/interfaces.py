@@ -25,6 +25,11 @@ class Color(str, Enum):
     Yellow = "yellow"
 
 
+class Symbol(str, Enum):
+    ArrowDown = "arrowDown"
+    ArrowUp = "arrowUp"
+
+
 COLOR_NAME_TO_HEXA = {
     # https://clrs.cc/
     Color.Aqua: "#7FDBFF",
@@ -79,7 +84,8 @@ class Configuration(BaseModel):
         variable: str
         file_name_filter: Optional[str] = Field(None, alias="fileNameFilter")
         position: constr(regex=r"^[0-9]+-[0-9]+$") = "1-1"  # type: ignore
-        color: Color = Color.Yellow
+        color: Optional[Color] = Color.Yellow
+        symbol: Optional[Symbol] = None
 
         # Computed
         x: int = 0

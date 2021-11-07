@@ -6,7 +6,7 @@ from itertools import groupby
 from multiprocessing import Pipe, cpu_count
 from pathlib import Path
 from threading import Thread
-from typing import Dict, Iterator, List, Optional, Set, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple
 
 import yaml  # type: ignore
 from click import Choice
@@ -16,19 +16,20 @@ from pyqtgraph import (
     DateAxisItem,
     FillBetweenItem,
     GraphicsLayoutWidget,
-    PlotCurveItem,
+    PlotDataItem,
     PlotItem,
     mkQApp,
     setConfigOptions,
+    mkColor,
 )
-from pyqtgraph.graphicsItems.PlotCurveItem import PlotCurveItem
+from pyqtgraph.graphicsItems.PlotDataItem import PlotDataItem
 from PySide6.QtGui import QIcon
 from typer import Argument, Exit, Option, Typer, colors, get_app_dir, prompt, secho
 
 from .background_processor import BackgroundProcessor
 from .csv import pad_and_sample, pseudo_hash
 from .csv.selector import Selected
-from .interfaces import COLOR_NAME_TO_HEXA, Configuration
+from .interfaces import COLOR_NAME_TO_HEXA, Configuration, Symbol, Color
 
 setConfigOptions(background="#141830", foreground="#D1D4DC", antialias=True)
 
@@ -454,12 +455,7 @@ def main(
 
     def compute_low_high(
         curve: Configuration.Curve, position_to_plot: Dict[Tuple[int, int], PlotItem]
-    ) -> Tuple[PlotCurveItem, PlotCurveItem]:
-        color = COLOR_NAME_TO_HEXA[curve.color]
-        low = PlotCurveItem(pen=color)
-        high = PlotCurveItem(pen=color)
-        fill = FillBetweenItem(low, high, color)
-
+    ) -> Tuple[PlotDataItem, PlotDataItem]:
         if not (curve.x, curve.y) in position_to_plot:
             position_to_plot[(curve.x, curve.y)] = get_plot(
                 Configuration.LayoutItem(position=f"{curve.x}-{curve.y}")
@@ -467,9 +463,37 @@ def main(
 
         plot = position_to_plot[(curve.x, curve.y)]
 
+        color = (
+            COLOR_NAME_TO_HEXA[curve.color]
+            if curve.color is not None
+            else mkColor(0, 0, 0, 0)
+        )
+
+        low = PlotDataItem(
+            pen=color,
+            symbol="arrow_up" if curve.symbol == Symbol.ArrowUp else None,
+            symbolSize=50,
+            symbolPen=COLOR_NAME_TO_HEXA[Color.Green],
+            symbolBrush=COLOR_NAME_TO_HEXA[Color.Green],
+        )
+
         plot.addItem(low)
+
+        high = PlotDataItem(
+            pen=color,
+            symbol="arrow_down" if curve.symbol == Symbol.ArrowDown else None,
+            symbolSize=50,
+            symbolPen=COLOR_NAME_TO_HEXA[Color.Red],
+            symbolBrush=COLOR_NAME_TO_HEXA[Color.Red],
+        )
+
         plot.addItem(high)
-        plot.addItem(fill)
+
+        low.setAlpha(0.0, True)
+
+        if curve.color is not None:
+            fill = FillBetweenItem(low, high, color)
+            plot.addItem(fill)
 
         return low, high
 
