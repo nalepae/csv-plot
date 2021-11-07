@@ -471,20 +471,40 @@ def main(
 
         low = PlotDataItem(
             pen=color,
-            symbol="arrow_up" if curve.symbol == Symbol.ArrowUp else None,
-            symbolSize=70,
-            symbolPen=COLOR_NAME_TO_HEXA[Color.Green],
-            symbolBrush=COLOR_NAME_TO_HEXA[Color.Green],
+            symbol="arrow_up"
+            if curve.symbol in (Symbol.ArrowUp, Symbol.EmptyArrowUp)
+            else None,
+            symbolSize=85,
+            symbolPen=(
+                COLOR_NAME_TO_HEXA[Color.Yellow]
+                if curve.symbol == Symbol.EmptyArrowUp
+                else None
+            ),
+            symbolBrush=(
+                COLOR_NAME_TO_HEXA[Color.Green]
+                if curve.symbol == Symbol.ArrowUp
+                else None
+            ),
         )
 
         plot.addItem(low)
 
         high = PlotDataItem(
             pen=color,
-            symbol="arrow_down" if curve.symbol == Symbol.ArrowDown else None,
-            symbolSize=70,
-            symbolPen=COLOR_NAME_TO_HEXA[Color.Red],
-            symbolBrush=COLOR_NAME_TO_HEXA[Color.Red],
+            symbol="arrow_down"
+            if curve.symbol in (Symbol.ArrowDown, Symbol.EmptyArrowDown)
+            else None,
+            symbolSize=85,
+            symbolPen=(
+                COLOR_NAME_TO_HEXA[Color.Yellow]
+                if curve.symbol == Symbol.EmptyArrowDown
+                else None
+            ),
+            symbolBrush=(
+                COLOR_NAME_TO_HEXA[Color.Red]
+                if curve.symbol == Symbol.ArrowDown
+                else None
+            ),
         )
 
         plot.addItem(high)

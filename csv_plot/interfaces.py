@@ -28,6 +28,8 @@ class Color(str, Enum):
 class Symbol(str, Enum):
     ArrowDown = "arrowDown"
     ArrowUp = "arrowUp"
+    EmptyArrowDown = "emptyArrowDown"
+    EmptyArrowUp = "emptyArrowUp"
 
 
 COLOR_NAME_TO_HEXA = {
