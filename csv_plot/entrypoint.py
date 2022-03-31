@@ -128,62 +128,9 @@ def get_default_configuration_files() -> Iterator[Path]:
         )
 
 
-@app.command()
 def main(
-    csvs_path: List[Path] = Argument(
-        ...,
-        help="CSV file to plot. This file must contain a header.",
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        resolve_path=True,
-    ),
-    configuration_files_dirs: Optional[List[Path]] = Option(
-        None,
-        "-c",
-        "--configuration-files-or-directories",
-        help=(
-            "A list of configuration files or directories containing configuration "
-            "files. You can specify only one configuration file, or one directory, or "
-            "mix of files and directories... If a directory is specified, CSV Plot "
-            "explores recursively all subdirectories to find configuration files. If "
-            "several configuration files match the CSV file, then CSV Plot ask you "
-            "which one you want to use."
-        ),
-        exists=True,
-        file_okay=True,
-        dir_okay=True,
-        resolve_path=True,
-        show_default=False,
-    ),
-    set_default_configuration_directory: Optional[Path] = Option(
-        None,
-        help=(
-            "Set a default directory where CSV Plot will recursively look for "
-            "configuration files. Once done, no need to specify configuration file any "
-            "more. If a configuration file is specified at launch while a default "
-            "directory is specified, then the configuration file will supersede the "
-            "default directory."
-        ),
-        file_okay=False,
-        dir_okay=True,
-        resolve_path=True,
-        is_eager=True,
-        callback=default_configuration_directory_callback,
-    ),
-):
-    """🌊 CSV Plot - Plot CSV files without headaches! 🏄
-
-    CSV Plot is a tool to efficiently plot your CSV files.
-    You define a YAML configuration file which specify how your CSV file should be
-    plotted (layout, colors, legend, units, etc...) and CSV Plot handles the heavy work
-    for you.
-
-    CSV Plot does respect your computer memory. This means CSV Plot only loads into
-    memory the portion of file which has to be plotted. CSV Plot is able to plot files
-    which are bigger than your memory, and has been tested with file larger than 100GB.
-    """
-
+    csvs_path: List[Path], configuration_files_dirs: Optional[List[Path]] = None
+) -> None:
     # Get CSV file columns names corresponding to floats
     def is_castable_to_float(value: str) -> bool:
         try:
@@ -360,7 +307,7 @@ def main(
 
             secho(
                 f"For configuration file `{chosen_configuration_file}` and the curve "
-                f"{variable}, `fileNameFilter` ({curve.file_name_filter}) is too"
+                f"{variable}, `fileNameFilter` ({curve.file_name_filter}) is too "
                 "restrictive and does not match any CSV file. ❌",
                 fg=colors.BRIGHT_RED,
             )
@@ -607,3 +554,61 @@ def main(
     finally:
         connector.send(None)
         background_processor.join()
+
+
+@app.command()
+def handler(
+    csvs_path: List[Path] = Argument(
+        ...,
+        help="CSV file to plot. This file must contain a header.",
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        resolve_path=True,
+    ),
+    configuration_files_dirs: Optional[List[Path]] = Option(
+        None,
+        "-c",
+        "--configuration-files-or-directories",
+        help=(
+            "A list of configuration files or directories containing configuration "
+            "files. You can specify only one configuration file, or one directory, or "
+            "mix of files and directories... If a directory is specified, CSV Plot "
+            "explores recursively all subdirectories to find configuration files. If "
+            "several configuration files match the CSV file, then CSV Plot ask you "
+            "which one you want to use."
+        ),
+        exists=True,
+        file_okay=True,
+        dir_okay=True,
+        resolve_path=True,
+        show_default=False,
+    ),
+    set_default_configuration_directory: Optional[Path] = Option(
+        None,
+        help=(
+            "Set a default directory where CSV Plot will recursively look for "
+            "configuration files. Once done, no need to specify configuration file any "
+            "more. If a configuration file is specified at launch while a default "
+            "directory is specified, then the configuration file will supersede the "
+            "default directory."
+        ),
+        file_okay=False,
+        dir_okay=True,
+        resolve_path=True,
+        is_eager=True,
+        callback=default_configuration_directory_callback,
+    ),
+) -> None:
+    """🌊 CSV Plot - Plot CSV files without headaches! 🏄
+
+    CSV Plot is a tool to efficiently plot your CSV files.
+    You define a YAML configuration file which specify how your CSV file should be
+    plotted (layout, colors, legend, units, etc...) and CSV Plot handles the heavy work
+    for you.
+
+    CSV Plot does respect your computer memory. This means CSV Plot only loads into
+    memory the portion of file which has to be plotted. CSV Plot is able to plot files
+    which are bigger than your memory, and has been tested with file larger than 100GB.
+    """
+    main(csvs_path, configuration_files_dirs)
